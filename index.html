@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login Page</title>
+    <link rel="icon" type="image/png" href="verifyotpfavi.png" />
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Poppins", sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            background: transparent;
+        }
+        
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url("agribg.JPG") no-repeat center center/cover;
+            z-index: -1;
+        }
+        
+        .login-container {
+            background: #fff;
+            border-radius: 15px;
+            padding: 40px 30px;
+            width: 380px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .icon {
+            position: relative;
+            display: inline-block;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+        
+        .icon img {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            display: block;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+            animation: floatLogo 4s ease-in-out infinite;
+        }
+        
+        .icon::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(120deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.6) 60%, rgba(255, 255, 255, 0) 100%);
+            transform: skewX(-25deg);
+            animation: shine 3s infinite;
+        }
+        
+        @keyframes shine {
+            0% {
+                left: -100%;
+            }
+            60%,
+            100% {
+                left: 120%;
+            }
+        }
+        
+        @keyframes floatLogo {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+        
+        h2 {
+            margin: 10px 0;
+            color: #333;
+        }
+        
+        p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+        
+        .social-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.3s;
+            text-decoration: none;
+        }
+        
+        .social-btn:hover {
+            background: #f1f1f1;
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            color: #888;
+            font-size: 14px;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #ddd;
+            margin: 0 10px;
+        }
+        
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #2e7d32;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+        
+        button:hover {
+            background: #1b5e20;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="login-container">
+        <div class="icon">
+            <img src="logo.jpg" alt="Farmer Logo">
+        </div>
+        <h2>WELCOME</h2>
+        <p>Sign in to your account to continue</p>
+
+        <!-- Google Sign-In Button -->
+        <div class="social-btn" id="btnGoogle"><i class="fab fa-google"></i> Continue with Google</div>
+
+        <div class="social-btn"><i class="fas fa-mobile-screen"></i>
+            <a href="verifyotp.html" style="text-decoration: none; color: inherit;" target="_blank">Continue with Mobile number</a>
+        </div>
+
+        <div class="divider">Or</div>
+        <a href="Accdetails.html"><button id="loginBtn">Create an Account</button></a>
+    </div>
+    <!-- Loads the common translator -->
+    <div id="translator-container"></div>
+    <script>
+        fetch("translator.html")
+            .then(res => res.text())
+            .then(data => {
+                document.getElementById("translator-container").innerHTML = data;
+            });
+    </script>
+
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBKsdwBBfykxQUhojaI2Y9a6in16Q26Cow",
+            authDomain: "app-5eeb0.firebaseapp.com",
+            projectId: "app-5eeb0",
+            storageBucket: "app-5eeb0.firebasestorage.app",
+            messagingSenderId: "527633506292",
+            appId: "1:527633506292:web:4fa6fae14acc58b5eda3a1",
+            measurementId: "G-T6D35L7D5K"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        const googleBtn = document.getElementById("btnGoogle");
+        const loginBtn = document.getElementById("loginBtn");
+
+        // Google Sign-In with Popup (opens new tab) and redirects to home.html
+        googleBtn.addEventListener("click", () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .then((result) => {
+                    const user = result.user;
+                    localStorage.setItem("welcomeMsg", `Welcome ${user.displayName} to Agri Daingo 🌱`);
+                    localStorage.setItem("userEmail", user.email);
+                    // Redirect to home.html after login
+                    window.location.href = "home.html";
+                })
+                .catch((error) => {
+                    console.error(error);
+                    alert("Google Sign-In failed. Please try again.");
+                });
+        });
+
+        // Create account button
+        loginBtn.addEventListener("click", () => {
+            localStorage.setItem("welcomeMsg", "Welcome to Agri Daingo 🌱");
+            window.location.href = "home.html";
+        });
+    </script>
+</body>
+
+</html>

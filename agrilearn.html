@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agri Learn - Voice Crop Detection</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: "Poppins", sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(rgba(229, 241, 229, 0.50), rgba(213, 232, 223, 0.60)), url("https://images.unsplash.com/photo-1501004318641-b39e6451bec6?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        
+        .main-title {
+            margin: 25px 0;
+            font-size: 52px;
+            font-weight: 800;
+            text-align: center;
+            background: linear-gradient(90deg, #00796B, #43A047, #8BC34A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.25);
+            letter-spacing: 2px;
+        }
+        
+        .search-filter-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0 25px 0;
+            flex-wrap: wrap;
+        }
+        
+        .search-filter-bar input {
+            width: 280px;
+            padding: 12px 18px;
+            border-radius: 25px;
+            border: 1px solid #bbb;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .search-filter-bar select {
+            padding: 12px 18px;
+            border-radius: 25px;
+            border: 1px solid #bbb;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        .translator-bar {
+            margin: 10px 0;
+        }
+        
+        .suggestions-wrapper {
+            position: relative;
+        }
+        
+        .suggestions-box {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            border: 1px solid #bbb;
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .suggestions-box div {
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+        
+        .suggestions-box div:hover {
+            background: #f0f0f0;
+        }
+        
+        .crop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+            width: 90%;
+            max-width: 1200px;
+            margin-bottom: 50px;
+        }
+        
+        .crop-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .crop-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: black;
+            border: 6px solid #046929;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .crop-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            transition: transform 0.4s ease;
+        }
+        
+        .crop-item:hover .crop-circle {
+            transform: scale(1.1);
+            box-shadow: 0 10px 20px rgba(1, 28, 5, 0.6);
+        }
+        
+        .crop-item:hover .crop-circle img {
+            transform: scale(1.1);
+        }
+        
+        .crop-item:active .crop-circle img {
+            transform: rotate(15deg) scale(1.15);
+        }
+        
+        .crop-label {
+            margin-top: 15px;
+            font-size: 20px;
+            color: #333;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .mic-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            background: #00796B;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s;
+        }
+        
+        .mic-btn.listening {
+            background: #004D40;
+        }
+        
+        .mic-btn:hover {
+            background: #004D40;
+        }
+        /* Translator dropdown top-right */
+        
+        .translator-bar {
+            position: fixed;
+            top: 15px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 6px 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+            color: #fff;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+        }
+        
+        .translator-bar select {
+            padding: 6px 10px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+            min-width: 120px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main-title" data-translate="title">Agri Learn</div>
+
+    <!-- 🌍 Translator Dropdown -->
+
+
+    <div class="search-filter-bar">
+        <div class="suggestions-wrapper">
+            <input type="text" id="searchInput" placeholder="Search crops..." data-translate="search">
+            <div id="suggestions" class="suggestions-box"></div>
+        </div>
+        <select id="topicFilter">
+      <option value="all" data-translate="all">Crop Category</option>
+      <option value="FieldCrops" data-translate="field">Field Crops</option>
+      <option value="Vegetables" data-translate="vegetables">Vegetables</option>
+      <option value="TreePlants" data-translate="tree">Tree Plants</option>
+    </select>
+        <button id="micBtn" class="mic-btn" data-translate="speak">🎤 Speak</button>
+    </div>
+
+    <!-- Crop Grids -->
+    <h3 data-translate="field">Field Crops</h3>
+    <div class="crop-grid" data-topic="FieldCrops">
+        <div class="crop-item">
+            <a href="wheat.html">
+                <div class="crop-circle"><img src="wheat.jpg" alt="Wheat"></div>
+            </a>
+            <div class="crop-label" data-translate="wheat">Wheat</div>
+        </div>
+        <div class="crop-item">
+            <a href="rice.html">
+                <div class="crop-circle"><img src="rice.jpg" alt="Rice"></div>
+            </a>
+            <div class="crop-label" data-translate="rice">Rice</div>
+        </div>
+        <div class="crop-item">
+            <a href="corn.html">
+                <div class="crop-circle"><img src="corn.jpg" alt="Corn"></div>
+            </a>
+            <div class="crop-label" data-translate="corn">Corn</div>
+        </div>
+        <div class="crop-item">
+            <a href="ragi.html">
+                <div class="crop-circle"><img src="ragi.jpg" alt="Ragi"></div>
+            </a>
+            <div class="crop-label" data-translate="ragi">Ragi</div>
+        </div>
+        <div class="crop-item">
+            <a href="sugarcane.html">
+                <div class="crop-circle"><img src="sugarcane.jpg" alt="Sugarcane"></div>
+            </a>
+            <div class="crop-label" data-translate="sugarcane">Sugarcane</div>
+        </div>
+    </div>
+
+    <h3 data-translate="vegetables">Vegetables</h3>
+    <div class="crop-grid" data-topic="Vegetables">
+        <div class="crop-item">
+            <a href="tomato.html">
+                <div class="crop-circle"><img src="tomato.jpg" alt="Tomato"></div>
+            </a>
+            <div class="crop-label" data-translate="tomato">Tomato</div>
+        </div>
+        <div class="crop-item">
+            <a href="onion.html">
+                <div class="crop-circle"><img src="onion.jpg" alt="Onion"></div>
+            </a>
+            <div class="crop-label" data-translate="onion">Onion</div>
+        </div>
+        <div class="crop-item">
+            <a href="potato.html">
+                <div class="crop-circle"><img src="potato.jpg" alt="Potato"></div>
+            </a>
+            <div class="crop-label" data-translate="potato">Potato</div>
+        </div>
+        <div class="crop-item">
+            <a href="garlic.html">
+                <div class="crop-circle"><img src="garlic.jpg" alt="Garlic"></div>
+            </a>
+            <div class="crop-label" data-translate="garlic">Garlic</div>
+        </div>
+        <div class="crop-item">
+            <a href="brinjal.html">
+                <div class="crop-circle"><img src="brinjal.jpg" alt="Brinjal"></div>
+            </a>
+            <div class="crop-label" data-translate="brinjal">Brinjal</div>
+        </div>
+    </div>
+
+    <h3 data-translate="tree">Tree Plants</h3>
+    <div class="crop-grid" data-topic="TreePlants">
+        <div class="crop-item">
+            <a href="mango.html">
+                <div class="crop-circle"><img src="mango.jpg" alt="Mango"></div>
+            </a>
+            <div class="crop-label" data-translate="mango">Mango</div>
+        </div>
+        <div class="crop-item">
+            <a href="coconut.html">
+                <div class="crop-circle"><img src="coconut.jpg" alt="Coconut"></div>
+            </a>
+            <div class="crop-label" data-translate="coconut">Coconut</div>
+        </div>
+        <div class="crop-item">
+            <a href="palmirah.html">
+                <div class="crop-circle"><img src="palmirah.jpg" alt="Palmirah"></div>
+            </a>
+            <div class="crop-label" data-translate="palmirah">Palmirah</div>
+        </div>
+        <div class="crop-item">
+            <a href="banana.html">
+                <div class="crop-circle"><img src="banana.jpg" alt="Banana"></div>
+            </a>
+            <div class="crop-label" data-translate="banana">Banana</div>
+        </div>
+        <div class="crop-item">
+            <a href="jackfruit.html">
+                <div class="crop-circle"><img src="jackfruit.jpg" alt="Jackfruit"></div>
+            </a>
+            <div class="crop-label" data-translate="jackfruit">Jackfruit</div>
+        </div>
+    </div>
+    <!-- 🌍 Translator Dropdown -->
+    <div class="translator-bar">
+        <label for="langSelect">🌐 Translator</label>
+        <select id="langSelect">
+      <option value="en">English</option>
+      <option value="ta">தமிழ் (Tamil)</option>
+      <option value="hi">हिंदी (Hindi)</option>
+      <option value="te">తెలుగు (Telugu)</option>
+      <option value="ml">മലയാളം (Malayalam)</option>
+      <option value="kn">ಕನ್ನಡ (Kannada)</option>
+      <option value="bn">বাংলা (Bengali)</option>
+      <option value="mr">मराठी (Marathi)</option>
+      <option value="gu">ગુજરાતી (Gujarati)</option>
+      <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+    </select>
+    </div>
+
+    <!-- 🌍 Translator Script -->
+    <script>
+        const translations = {
+            ta: {
+                title: "அக்ரி லேர்ன்",
+                search: "பயிர்களை தேடு...",
+                all: "பயிர் வகை",
+                field: "பயிர் பயிர்கள்",
+                vegetables: "காய்கறிகள்",
+                tree: "மரங்கள்",
+                speak: "🎤 பேசுங்கள்",
+                wheat: "கோதுமை",
+                rice: "அரிசி",
+                corn: "மக்காச்சோளம்",
+                ragi: "ராகி",
+                sugarcane: "கரும்பு",
+                tomato: "தக்காளி",
+                onion: "வெங்காயம்",
+                potato: "உருளைக்கிழங்கு",
+                garlic: "பூண்டு",
+                brinjal: "கத்தரிக்காய்",
+                mango: "மாம்பழம்",
+                coconut: "தேங்காய்",
+                palmirah: "பனை",
+                banana: "வாழைப்பழம்",
+                jackfruit: "பலாப்பழம்"
+            },
+            hi: {
+                title: "एग्री लर्न",
+                search: "फसलें खोजें...",
+                all: "फसल श्रेणी",
+                field: "खेत की फसलें",
+                vegetables: "सब्ज़ियाँ",
+                tree: "पेड़ पौधे",
+                speak: "🎤 बोलें",
+                wheat: "गेहूं",
+                rice: "चावल",
+                corn: "मक्का",
+                ragi: "रागी",
+                sugarcane: "गन्ना",
+                tomato: "टमाटर",
+                onion: "प्याज",
+                potato: "आलू",
+                garlic: "लहसुन",
+                brinjal: "बैंगन",
+                mango: "आम",
+                coconut: "नारियल",
+                palmirah: "ताड़",
+                banana: "केला",
+                jackfruit: "कटहल"
+            },
+            te: {
+                title: "వ్యవసాయ లెర్న్",
+                search: "పంటలు వెతకండి...",
+                all: "పంట వర్గం",
+                field: "పంట పొలాలు",
+                vegetables: "కూరగాయలు",
+                tree: "చెట్లు",
+                speak: "🎤 మాట్లాడండి",
+                wheat: "గోధుమలు",
+                rice: "బియ్యం",
+                corn: "మొక్కజొన్న",
+                ragi: "రాగి",
+                sugarcane: "చెరకు",
+                tomato: "టమోటా",
+                onion: "ఉల్లిపాయ",
+                potato: "ఆలుగడ్డ",
+                garlic: "వెల్లుల్లి",
+                brinjal: "వంకాయ",
+                mango: "మామిడి",
+                coconut: "కొబ్బరి",
+                palmirah: "తాటి",
+                banana: "అరటి",
+                jackfruit: "పనసపండు"
+            },
+            ml: {
+                title: "അഗ്രി ലേൺ",
+                search: "വിളകൾ തിരയൂ...",
+                all: "വിള വിഭാഗം",
+                field: "പാടശേഖര വിളകൾ",
+                vegetables: "പച്ചക്കറികൾ",
+                tree: "മരങ്ങൾ",
+                speak: "🎤 സംസാരിക്കുക",
+                wheat: "ഗോതമ്പ്",
+                rice: "അരി",
+                corn: "മക്ക",
+                ragi: "രാഗി",
+                sugarcane: "കരിമ്പ്",
+                tomato: "തക്കാളി",
+                onion: "സവാള",
+                potato: "ഉരുളക്കിഴങ്ങ്",
+                garlic: "വെളുത്തുള്ളി",
+                brinjal: "വഴുതന",
+                mango: "മാങ്ങ",
+                coconut: "തേങ്ങ",
+                palmirah: "പന",
+                banana: "വാഴപ്പഴം",
+                jackfruit: "ചക്ക"
+            },
+            kn: {
+                title: "ಕೃಷಿ ಲರ್ನ್",
+                search: "ಬೆಳೆಗಳನ್ನು ಹುಡುಕಿ...",
+                all: "ಬೆಳೆ ವರ್ಗ",
+                field: "ಕ್ಷೇತ್ರ ಬೆಳೆಗಳು",
+                vegetables: "ತರಕಾರಿಗಳು",
+                tree: "ಮರಗಳು",
+                speak: "🎤 ಮಾತನಾಡಿ",
+                wheat: "ಗೋಧಿ",
+                rice: "ಅಕ್ಕಿ",
+                corn: "ಮೆಕ್ಕೆಜೋಳ",
+                ragi: "ರಾಗಿ",
+                sugarcane: "ಕರಿಬೇವು",
+                tomato: "ಟೊಮೆಟೊ",
+                onion: "ಈರುಳ್ಳಿ",
+                potato: "ಅಲೂಗಡ್ಡೆ",
+                garlic: "ಬೆಳ್ಳುಳ್ಳಿ",
+                brinjal: "ಬದನೇಕಾಯಿ",
+                mango: "ಮಾವಿನಹಣ್ಣು",
+                coconut: "ತೆಂಗು",
+                palmirah: "ತಾಳೆ",
+                banana: "ಬಾಳೆಹಣ್ಣು",
+                jackfruit: "ಹಲಸು"
+            },
+            bn: {
+                title: "অ্যাগ্রি লার্ন",
+                search: "ফসল খুঁজুন...",
+                all: "ফসলের ধরন",
+                field: "ধান ক্ষেত্র",
+                vegetables: "সবজি",
+                tree: "গাছপালা",
+                speak: "🎤 বলুন",
+                wheat: "গম",
+                rice: "চাল",
+                corn: "ভুট্টা",
+                ragi: "রাগি",
+                sugarcane: "আখ",
+                tomato: "টমেটো",
+                onion: "পেঁয়াজ",
+                potato: "আলু",
+                garlic: "রসুন",
+                brinjal: "বেগুন",
+                mango: "আম",
+                coconut: "নারকেল",
+                palmirah: "তাল",
+                banana: "কলা",
+                jackfruit: "কাঁঠাল"
+            },
+            mr: {
+                title: "ॲग्री लर्न",
+                search: "पिके शोधा...",
+                all: "पिकांचा प्रकार",
+                field: "शेती पिके",
+                vegetables: "भाज्या",
+                tree: "झाडे",
+                speak: "🎤 बोला",
+                wheat: "गहू",
+                rice: "तांदूळ",
+                corn: "मका",
+                ragi: "नाचणी",
+                sugarcane: "ऊस",
+                tomato: "टोमॅटो",
+                onion: "कांदा",
+                potato: "बटाटा",
+                garlic: "लसूण",
+                brinjal: "वांगे",
+                mango: "आंबा",
+                coconut: "नारळ",
+                palmirah: "ताड",
+                banana: "केळी",
+                jackfruit: "फणस"
+            },
+            gu: {
+                title: "એગ્રી લર્ન",
+                search: "પાક શોધો...",
+                all: "પાક પ્રકાર",
+                field: "ખેતરની પાકો",
+                vegetables: "ભાજીપાલો",
+                tree: "વૃક્ષો",
+                speak: "🎤 બોલો",
+                wheat: "ગહું",
+                rice: "ચોખા",
+                corn: "મકાઈ",
+                ragi: "નાચણી",
+                sugarcane: "ઉસ",
+                tomato: "ટામેટું",
+                onion: "ડુંગળી",
+                potato: "બટાકા",
+                garlic: "લસણ",
+                brinjal: "રીંગણ",
+                mango: "કેરી",
+                coconut: "નાળિયેર",
+                palmirah: "તાડ",
+                banana: "કેલા",
+                jackfruit: "જેકફ્રૂટ"
+            },
+            pa: {
+                title: "ਐਗਰੀ ਲਰਨ",
+                search: "ਫਸਲਾਂ ਖੋਜੋ...",
+                all: "ਫਸਲ ਦੀ ਸ਼੍ਰੇਣੀ",
+                field: "ਖੇਤੀ ਫਸਲਾਂ",
+                vegetables: "ਸਬਜ਼ੀਆਂ",
+                tree: "ਵ੍ਰਿੱਖ",
+                speak: "🎤 ਬੋਲੋ",
+                wheat: "ਗੇਹੂੰ",
+                rice: "ਚੌਲ",
+                corn: "ਮੱਕੀ",
+                ragi: "ਰਾਗੀ",
+                sugarcane: "ਗੰਨਾ",
+                tomato: "ਟਮਾਟਰ",
+                onion: "ਪਿਆਜ਼",
+                potato: "ਆਲੂ",
+                garlic: "ਲਸਣ",
+                brinjal: "ਬੈਂਗਣ",
+                mango: "ਅੰਬ",
+                coconut: "ਨਾਰੀਅਲ",
+                palmirah: "ਤਾਡ",
+                banana: "ਕੇਲਾ",
+                jackfruit: "ਕਠਲ"
+            }
+        };
+
+        const langSelect = document.getElementById("langSelect");
+
+        function applyTranslation(lang) {
+            document.querySelectorAll("[data-translate]").forEach(el => {
+                const key = el.getAttribute("data-translate");
+                if (translations[lang] && translations[lang][key]) {
+                    if (el.placeholder) {
+                        el.placeholder = translations[lang][key];
+                    } else {
+                        el.innerText = translations[lang][key];
+                    }
+                }
+            });
+            localStorage.setItem("selectedLang", lang);
+        }
+
+        // 🔹 Update crop labels dynamically
+        function updateCropNames(lang) {
+            const labels = document.querySelectorAll(".crop-label");
+            labels.forEach(el => {
+                const key = el.getAttribute("data-translate");
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerText = translations[lang][key];
+                }
+            });
+        }
+
+        langSelect.addEventListener("change", () => {
+            const lang = langSelect.value;
+            applyTranslation(lang);
+            updateCropNames(lang);
+        });
+
+        // Load saved language
+        const savedLang = localStorage.getItem("selectedLang") || "en";
+        langSelect.value = savedLang;
+        applyTranslation(savedLang);
+        updateCropNames(savedLang);
+    </script>
+
+    <!-- 🎤 Voice + Search Script (unchanged) -->
+    <script>
+        /// Crop data with multiple pronunciation variants
+        const cropNames = ["Wheat", "Rice", "Corn", "Ragi", "Sugarcane", "Tomato", "Onion", "Potato", "Garlic", "Brinjal", "Mango", "Coconut", "Palmirah", "Banana", "Jackfruit"];
+
+        const cropSynonyms = {
+            wheat: ["wheat", "weet", "beet", "eat", "gothumai", "godhumai", "godhumai wheat", "aah wheat", "whett", "whit", "weat", "wheet", "ghothumai", "wheet wheat", "vheat", "vhett", "vit", "vhut", "weett", "whett wheat", "ghodumai"],
+            rice: ["rice", "arisi", "arice", "saadam", "aah rice", "riis", "rees", "rais", "raice", "raees", "arisee", "aricci", "arisse", "arish", "araasi", "aah raice", "ricee", "rees rice", "riice", "raaci"],
+            corn: ["corn", "khaan", "maize", "makka", "makka cholam", "aah corn", "korn", "kawn", "khoarn", "maizee", "maiz", "maayz", "macca", "makka cholum", "maik", "kornn", "coarn", "coarnn", "corny", "korny", "cawrn"],
+            ragi: ["ragi", "kelvaragu", "kambu", "kollu", "aah ragi", "raagi", "raggy", "ragi wheat", "khelvaragu", "kambhu", "kolluu", "ragi rice", "raagi", "raagii", "raggii", "kelvaraguu", "raggie", "raggi", "raagy"],
+            sugarcane: ["sugarcane", "karumbu", "sugarcan", "kharumbu", "sugar", "aah sugarcane", "sugercane", "sugar cane", "sugercan", "karumbhu", "karumbu juice", "sugercann", "sugarcain", "sugarcainn", "sugarcaan", "sugarcane juice", "sugarcainne", "shugarcane", "sugercanee", "sugarcanee", "sugercainn"],
+            tomato: ["tomato", "thakkali", "aah tomato", "tomatto", "tommato", "tomatow", "tomaato", "tommattow", "tomat", "tomtato", "tomatta", "thakkalee", "thakkalii", "tomaato", "tomaatoo", "tomatoo", "tomattoo", "tomattoe", "tomatte"],
+            onion: ["onion", "vengayam", "aah onion", "onionn", "oniyun", "onien", "oniyun", "unyun", "onioon", "oniyon", "vengaiyam", "vengeyam", "vengaiyum", "vengayum", "vengaiyum onion", "unyun onion", "onionn", "onioon"],
+            potato: ["potato", "urulai kilangu", "aah potato", "potatto", "potatow", "potattow", "potattoe", "pottato", "pottaato", "potaato", "urulai kilangoo", "poteto", "potetoo", "potetow", "potaato", "potatoo", "potate"],
+            garlic: ["garlic", "gaaarlic", "poondu", "gaarlic", "garlick", "garlique", "garlicc", "garlick", "gaarlick", "garlik", "gaarrlic", "poondhu", "poondu garlic", "garlik", "garlikc", "garlicoo", "garlickoo", "garleek", "garleec", "garlicke"],
+            brinjal: ["brinjal", "kathirikai", "aah brinjal", "brinjall", "brinjal eggplant", "brinjal k", "brinjal ka", "brinjhal", "brinjal kaathirikai", "brinjal kathrikai", "brinjale", "brinjal kathrik", "brinjal kathir", "brinjal kathirrai", "brinjal kaathir", "brinjal kathi", "brinjal kathiri", "brinjal kathi kai"],
+            mango: ["mango", "maampazham", "aah mango", "mangoo", "manggo", "maangoo", "maanggo", "mangow", "maangow", "mangowh", "mangoo fruit", "maampazham fruit", "maampazham mango", "maampazhum", "maampazhamn", "mangoo mango", "mango fruit", "maangoo fruit"],
+            coconut: ["coconut", "thengai", "cokaanut", "coconutt", "cocanut", "coconat", "cokonut", "cokonat", "kokonat", "thengai coconut", "thengaii", "thengay", "tengai", "coconut tree", "coconu", "cocono", "coconuutt", "coconutte"],
+            palmirah: ["palmirah", "panai", "pana", "panamaram", "aah palmirah", "palmira", "palmira tree", "palmera", "palmiira", "palmeera", "palmyra", "palmiraah", "palmirha", "palmyrah", "palmaira", "palmiirah", "panai tree", "palmirah palm", "palmeerah"],
+            banana: ["banana", "vazhai", "vazhaipazham", "aah banana", "vaalapalam", "bannana", "bananna", "bananah", "bananaa", "bananna fruit", "banana fruit", "vazhaai", "vazhaipazham fruit", "vaalapalam fruit", "bananah fruit", "bananaa fruit", "banan", "banana tree", "bannana tree", "bananaa"],
+            jackfruit: ["jackfruit", "pala pazham", "aah jackfruit", "palaapalam", "jack fruit", "jackfruut", "jackfruitt", "jackfruit fruit", "pala pazham fruit", "palaapalam fruit", "jackfruit tree", "jackfruittree", "jackfrut", "jakfruit", "jakfrut", "jakfruitt", "jackfroot"]
+        };
+
+        // Normalize string (remove non-alphanumeric characters)
+        function normalize(str) {
+            return str.toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
+
+        // Levenshtein distance
+        function levenshtein(a, b) {
+            const m = a.length,
+                n = b.length;
+            const dp = Array.from({
+                length: m + 1
+            }, () => Array(n + 1).fill(0));
+            for (let i = 0; i <= m; i++) dp[i][0] = i;
+            for (let j = 0; j <= n; j++) dp[0][j] = j;
+            for (let i = 1; i <= m; i++) {
+                for (let j = 1; j <= n; j++) {
+                    dp[i][j] = (a[i - 1] === b[j - 1]) ?
+                        dp[i - 1][j - 1] :
+                        1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+                }
+            }
+            return dp[m][n];
+        }
+
+        // Find best crop using fuzzy matching
+        function findBestCrop(word) {
+            word = normalize(word);
+            let bestCrop = null,
+                bestScore = Infinity;
+
+            for (const crop in cropSynonyms) {
+                for (const syn of cropSynonyms[crop]) {
+                    const dist = levenshtein(word, normalize(syn));
+                    if (dist < bestScore) {
+                        bestScore = dist;
+                        bestCrop = crop;
+                    }
+                }
+            }
+
+            return bestScore <= 4 ? bestCrop.charAt(0).toUpperCase() + bestCrop.slice(1) : null;
+        }
+
+        // Search & filter
+        const searchInput = document.getElementById("searchInput");
+        const suggestionsBox = document.getElementById("suggestions");
+        const topicFilter = document.getElementById("topicFilter");
+
+        function showSuggestions(value) {
+            suggestionsBox.innerHTML = "";
+            if (!value.trim()) {
+                suggestionsBox.style.display = "none";
+                return;
+            }
+            const filtered = cropNames.filter(name => name.toLowerCase().includes(value.toLowerCase()));
+            filtered.forEach(name => {
+                const div = document.createElement("div");
+                div.textContent = name;
+                div.onclick = () => {
+                    searchInput.value = name;
+                    suggestionsBox.style.display = "none";
+                    filterCrops();
+                };
+                suggestionsBox.appendChild(div);
+            });
+            suggestionsBox.style.display = filtered.length ? "block" : "none";
+        }
+
+        function filterCrops() {
+            const searchValue = searchInput.value.toLowerCase();
+            const selectedTopic = topicFilter.value;
+            document.querySelectorAll(".crop-grid").forEach(grid => {
+                const topic = grid.getAttribute("data-topic");
+                let anyVisible = false;
+                grid.querySelectorAll(".crop-item").forEach(item => {
+                    const text = item.querySelector(".crop-label").innerText.toLowerCase();
+                    const matchSearch = text.includes(searchValue);
+                    const matchTopic = (selectedTopic === "all" || selectedTopic === topic);
+                    if (matchSearch && matchTopic) {
+                        item.style.display = "flex";
+                        anyVisible = true;
+                    } else item.style.display = "none";
+                });
+                grid.previousElementSibling.style.display = anyVisible ? "block" : "none";
+                grid.style.display = anyVisible ? "grid" : "none";
+            });
+        }
+
+        searchInput.addEventListener("keyup", () => {
+            showSuggestions(searchInput.value);
+            filterCrops();
+        });
+        topicFilter.addEventListener("change", filterCrops);
+
+        // Voice Assistant
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const micBtn = document.getElementById("micBtn");
+
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = "en-US";
+            recognition.maxAlternatives = 5;
+            let isListening = false;
+
+            micBtn.addEventListener("click", () => {
+                if (isListening) recognition.stop();
+                else recognition.start();
+            });
+
+            recognition.onstart = () => {
+                isListening = true;
+                micBtn.textContent = "🎙 Listening...";
+                micBtn.classList.add("listening");
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript.trim();
+                const synth = window.speechSynthesis;
+                const matchedCrop = findBestCrop(transcript);
+                if (matchedCrop) {
+                    searchInput.value = matchedCrop;
+                    filterCrops();
+                    searchInput.focus();
+                    synth.speak(new SpeechSynthesisUtterance("The crop " + matchedCrop + " is detected"));
+                } else {
+                    synth.speak(new SpeechSynthesisUtterance("Crop " + transcript + " is not detected"));
+                }
+            };
+
+            recognition.onerror = recognition.onend = () => {
+                isListening = false;
+                micBtn.textContent = "🎤 Speak";
+                micBtn.classList.remove("listening");
+            };
+
+        } else {
+            micBtn.style.display = "none";
+            alert("Sorry, your browser does not support speech recognition.");      
+        }
+    </script>
+</body>
+
+</html>

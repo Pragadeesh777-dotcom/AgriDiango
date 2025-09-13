@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AgriCare - Contact Us</title>
+    <link rel="icon" type="image/png" href="verifyotpfavi.png" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="contact.css" />
+    <style>
+        /* Reset */
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", sans-serif;
+        }
+        
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: url("agribg.jpg.jpeg") center/cover no-repeat;
+            z-index: -1;
+        }
+        /* Navbar */
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 3rem;
+            background-color: #036c09;
+            background-size: 600% 600%;
+            animation: gradientShift 12s ease infinite;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .animated-leaf {
+            color: #ffd54f;
+            animation: leafBounce 2s infinite alternate;
+        }
+        
+        @keyframes leafBounce {
+            0% {
+                transform: rotate(-10deg) scale(1);
+            }
+            50% {
+                transform: rotate(10deg) scale(1.2);
+                color: #fff176;
+            }
+            100% {
+                transform: rotate(-10deg) scale(1);
+            }
+        }
+        
+        .navbar ul {
+            display: flex;
+            list-style: none;
+            gap: 1.5rem;
+        }
+        
+        .navbar ul li a {
+            text-decoration: none;
+            color: #fff;
+            font-weight: 500;
+            position: relative;
+            transition: color 0.3s, transform 0.3s;
+        }
+        
+        .navbar ul li a::after {
+            content: "";
+            position: absolute;
+            width: 0%;
+            height: 2px;
+            left: 0;
+            bottom: -4px;
+            background: #ffd54f;
+            transition: width 0.3s ease-in-out;
+        }
+        
+        .navbar ul li a:hover::after {
+            width: 100%;
+        }
+        
+        .navbar ul li.active a,
+        .navbar ul li a:hover {
+            color: #ffd54f;
+            transform: scale(1.1);
+        }
+        /* Contact Form Container */
+        
+        .contact-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .contact-form {
+            background: #fff;
+            padding: 40px 30px;
+            border-radius: 15px;
+            width: 400px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+        
+        .contact-form h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .contact-form input,
+        .contact-form textarea {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 10px 0;
+            border: 2px solid #2e7d32;
+            /* Green border */
+            border-radius: 8px;
+            font-size: 14px;
+            resize: none;
+            transition: 0.3s;
+        }
+        
+        .contact-form input:focus,
+        .contact-form textarea:focus {
+            outline: none;
+            border-color: #1b5e20;
+            /* Darker green on focus */
+            box-shadow: 0 0 5px rgba(46, 125, 50, 0.5);
+        }
+        
+        .contact-form button {
+            width: 100%;
+            padding: 14px;
+            background: #2e7d32;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+        
+        .contact-form button:hover {
+            background: #1b5e20;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="logo">AgriCare <span class="animated-leaf">🍃</span></div>
+        <ul>
+            <li><a href="home.html">Home</a></li>
+            <li><a href="#">Diagnose</a></li>
+            <li><a href="#">AgriLearn</a></li>
+            <li><a href="#">Weather</a></li>
+            <li><a href="#">Services</a></li>
+            <li class="active"><a href="contact.html">Contact Us</a></li>
+        </ul>
+    </nav>
+
+    <!-- Contact Form -->
+    <div class="contact-container">
+        <div class="contact-form">
+            <h2>Contact Us</h2>
+            <form id="contactForm">
+                <input type="text" id="name" placeholder="Your Name" required />
+                <input type="email" id="email" placeholder="Email Address" required />
+                <input type="tel" id="phone" placeholder="Phone Number" required />
+                <input type="text" id="subject" placeholder="Subject" required />
+                <textarea id="message" placeholder="Write your message..." rows="5" required></textarea>
+                <button type="submit">Send Message</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Include contact.js for form functionality -->
+    <script src="contact.js"></script>
+</body>
+
+</html>

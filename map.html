@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Tamil Nadu Fertilizer Shops</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            background: url('map.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #333;
+        }
+        /* ✅ Navbar styles same as home.html */
+        
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 3rem;
+            background-color: #036c09;
+        }
+        
+        .navbar .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .navbar .logo i {
+            color: #ffeb3b;
+            /* yellow leaf */
+            margin-right: 8px;
+        }
+        
+        .navbar .nav-links {
+            list-style: none;
+            display: flex;
+            gap: 1.5rem;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .navbar .nav-links li a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        
+        .navbar .nav-links li a:hover,
+        .navbar .nav-links li.active a {
+            color: #ffeb3b;
+        }
+        
+        .overlay {
+            background: rgba(255, 255, 255, 0.4);
+            min-height: 100vh;
+            padding-top: 70px;
+        }
+        
+        .hero {
+            text-align: center;
+            padding: 50px 20px;
+            animation: fadeIn 1.5s ease-in-out;
+        }
+        
+        .hero h1 {
+            font-size: 2.8rem;
+            font-weight: bold;
+            color: #1b5e20;
+            text-shadow: 1px 1px 4px rgba(255, 255, 255, 0.9);
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            color: #222;
+            font-weight: 500;
+        }
+        
+        .form-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        .input-group {
+            max-width: 500px;
+            margin: auto;
+        }
+        
+        .form-select {
+            font-size: 1.1rem;
+            border-radius: 10px 0 0 10px;
+            padding: 10px;
+            border: 2px solid #2e7d32;
+            background-color: rgba(255, 255, 255, 0.95);
+            color: #2e7d32;
+            flex: 1;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .mic-btn {
+            background: #2e7d32;
+            border: none;
+            color: white;
+            padding: 0 20px;
+            border-radius: 0 10px 10px 0;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .mic-btn:hover {
+            background: #1b5e20;
+        }
+        
+        .mic-btn.listening {
+            background: red;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.6);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(255, 0, 0, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+            }
+        }
+        
+        .info-section {
+            margin-top: 40px;
+        }
+        
+        .info-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            height: 100%;
+            color: #333;
+            border: 2px solid #2e7d32;
+            text-align: center;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 10px 25px rgba(46, 125, 50, 0.4);
+            border-color: #43a047;
+            background: linear-gradient(135deg, #e8f5e9, #ffffff);
+        }
+        
+        .info-card h5 {
+            color: #2e7d32;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: color 0.3s;
+        }
+        
+        .info-card:hover h5 {
+            color: #1b5e20;
+        }
+        
+        .card-img {
+            width: 100%;
+            height: 180px;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .card-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease, filter 0.3s ease;
+            border-radius: 12px;
+        }
+        
+        .info-card:hover .card-img img {
+            transform: scale(1.15) rotate(2deg);
+            filter: brightness(1.1);
+        }
+        
+        .info-card:hover {
+            animation: floatCard 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes floatCard {
+            0% {
+                transform: translateY(-10px) scale(1.03);
+            }
+            100% {
+                transform: translateY(-5px) scale(1.04);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ✅ SAME NAVBAR AS home.html -->
+    <nav class="navbar">
+        <div class="logo"><i class="fa-solid fa-leaf animated-leaf"></i>AgriCare</div>
+        <ul class="nav-links">
+            <li><a href="home.html">Home</a></li>
+            <li><a href="#">Diagnose</a></li>
+            <li><a href="#">AgriLearn</a></li>
+            <li class="active"><a href="map.html">Fertilizer</a></li>
+            <li><a href="#">Services</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+        </ul>
+    </nav>
+
+    <div class="overlay">
+        <!-- Hero Section -->
+        <div class="hero">
+            <h1>Find Fertilizer Shops Across Tamil Nadu</h1>
+            <p>Choose your district or simply <b>speak its name</b> to find shops instantly in Google Maps.</p>
+        </div>
+
+        <!-- Form Section -->
+        <div class="form-section">
+            <h4 class="mb-3 text-success">Select Your District</h4>
+            <div class="input-group">
+                <select id="district" class="form-select" autofocus>
+          <option value="">-- Select District --</option>
+          <option>Chennai</option>
+          <option>Coimbatore</option>
+          <option>Madurai</option>
+          <option>Salem</option>
+          <option>Tiruchirappalli</option>
+          <option>Tirunelveli</option>
+          <option>Erode</option>
+          <option>Vellore</option>
+          <option>Kancheepuram</option>
+          <option>Thanjavur</option>
+          <option>Dindigul</option>
+          <option>Theni</option>
+          <option>Tiruppur</option>
+          <option>Cuddalore</option>
+          <option>Thoothukudi</option>
+          <option>Virudhunagar</option>
+          <option>Sivaganga</option>
+          <option>Kanyakumari</option>
+          <option>Namakkal</option>
+          <option>Krishnagiri</option>
+          <option>Dharmapuri</option>
+          <option>Ariyalur</option>
+          <option>Perambalur</option>
+          <option>Pudukkottai</option>
+          <option>Karur</option>
+          <option>Nagapattinam</option>
+          <option>Tiruvarur</option>
+          <option>Ramanathapuram</option>
+          <option>Tiruvannamalai</option>
+          <option>Villupuram</option>
+          <option>Kallakurichi</option>
+          <option>Tenkasi</option>
+          <option>Tirupathur</option>
+          <option>Ranipet</option>
+          <option>Mayiladuthurai</option>
+          <option>Nilgiris</option>
+        </select>
+                <button id="micBtn" class="mic-btn" title="Voice Search">
+          <i class="fas fa-microphone"></i>
+        </button>
+            </div>
+        </div>
+
+        <!-- Info Cards -->
+        <div class="container info-section">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="info-card">
+                        <div class="card-img">
+                            <img src="fetilizer1.jpg" alt="Importance">
+                        </div>
+                        <h5>Importance</h5>
+                        <p>Fertilizers enrich soil and improve crop yield. Farmers rely on these shops for sustainable farming.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-card">
+                        <div class="card-img">
+                            <img src="fertilizer2.jpeg" alt="Quick Access">
+                        </div>
+                        <h5>Quick Access</h5>
+                        <p>With one click, you’ll be redirected to Google Maps showing fertilizer shops near your chosen district.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="info-card">
+                        <div class="card-img">
+                            <img src="fertilizer3.jpeg" alt="Farmer Support">
+                        </div>
+                        <h5>Farmer Support</h5>
+                        <p>Our goal is to make agriculture easier for farmers by connecting them with the right resources.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        const districtSelect = document.getElementById("district");
+        const micBtn = document.getElementById("micBtn");
+
+        const districtMap = {
+            "chennai": "Chennai",
+            "madras": "Chennai",
+            "coimbatore": "Coimbatore",
+            "kovai": "Coimbatore",
+            "madurai": "Madurai",
+            "madhurai": "Madurai",
+            "salem": "Salem",
+            "selem": "Salem",
+            "sailam": "Salem",
+            "trichy": "Tiruchirappalli",
+            "tiruchi": "Tiruchirappalli",
+            "tiruchirappalli": "Tiruchirappalli",
+            "tirunelveli": "Tirunelveli",
+            "nellai": "Tirunelveli",
+            "erode": "Erode",
+            "vellore": "Vellore",
+            "kanchipuram": "Kancheepuram",
+            "kanchee": "Kancheepuram",
+            "thanjavur": "Thanjavur",
+            "thanjai": "Thanjavur",
+            "dindigul": "Dindigul",
+            "theni": "Theni",
+            "tiruppur": "Tiruppur",
+            "cuddalore": "Cuddalore",
+            "thoothukudi": "Thoothukudi",
+            "tuticorin": "Thoothukudi",
+            "virudhunagar": "Virudhunagar",
+            "sivaganga": "Sivaganga",
+            "kanyakumari": "Kanyakumari",
+            "nagercoil": "Kanyakumari",
+            "namakkal": "Namakkal",
+            "krishnagiri": "Krishnagiri",
+            "dharmapuri": "Dharmapuri",
+            "ariyalur": "Ariyalur",
+            "perambalur": "Perambalur",
+            "pudukkottai": "Pudukkottai",
+            "karur": "Karur",
+            "nagapattinam": "Nagapattinam",
+            "tiruvarur": "Tiruvarur",
+            "ramanathapuram": "Ramanathapuram",
+            "ramnad": "Ramanathapuram",
+            "tiruvannamalai": "Tiruvannamalai",
+            "villupuram": "Villupuram",
+            "kallakurichi": "Kallakurichi",
+            "tenkasi": "Tenkasi",
+            "tirupathur": "Tirupathur",
+            "ranipet": "Ranipet",
+            "mayiladuthurai": "Mayiladuthurai",
+            "nilgiris": "Nilgiris",
+            "ooty": "Nilgiris"
+        };
+
+        districtSelect.addEventListener("change", () => {
+            redirectToMap(districtSelect.value);
+        });
+
+        function redirectToMap(district) {
+            if (district) {
+                const query = encodeURIComponent("fertilizer shops in " + district + ", Tamil Nadu");
+                window.location.href = "https://www.google.com/maps/search/" + query;
+            }
+        }
+
+        if ("webkitSpeechRecognition" in window) {
+            const recognition = new webkitSpeechRecognition();
+            recognition.lang = "en-IN";
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            micBtn.addEventListener("click", () => {
+                recognition.start();
+                micBtn.classList.add("listening");
+            });
+
+            recognition.onresult = (event) => {
+                const spokenText = event.results[0][0].transcript.trim().toLowerCase();
+                micBtn.classList.remove("listening");
+
+                let districtName = districtMap[spokenText];
+                if (!districtName) {
+                    for (let key in districtMap) {
+                        if (spokenText.includes(key)) {
+                            districtName = districtMap[key];
+                            break;
+                        }
+                    }
+                }
+
+                if (districtName) {
+                    districtSelect.value = districtName;
+                    redirectToMap(districtName);
+                } else {
+                    alert("District not recognized: " + spokenText);
+                }
+            };
+
+            recognition.onerror = () => {
+                micBtn.classList.remove("listening");
+                alert("Voice recognition error. Try again.");
+            };
+        } else {
+            micBtn.style.display = "none";
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

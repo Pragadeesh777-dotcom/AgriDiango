@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agri Learn - Banana Varieties</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f5f2 url('https://www.transparenttextures.com/patterns/wood-pattern.png') repeat;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .back-arrow {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.1rem;
+            color: #064420;
+            background-color: #ffbb00;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        
+        .back-arrow:hover {
+            background-color: #006622;
+            color: white;
+        }
+        /* Translator box */
+        
+        #google_translate_element {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 999;
+        }
+        /* Wrapper for heading + cards */
+        
+        .content-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-top: 60px;
+        }
+        
+        h1 {
+            text-align: left;
+            margin: 0 0 40px 10px;
+            font-size: 2rem;
+        }
+        
+        .cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+        }
+        
+        .card {
+            width: 360px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+        }
+        
+        .card img {
+            width: calc(100% - 24px);
+            height: 220px;
+            object-fit: cover;
+            border-radius: 16px;
+            margin: 12px;
+        }
+        
+        .card-content {
+            padding: 20px 25px;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .card-content h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0;
+        }
+        
+        .card-content p {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .get-started-btn {
+            display: block;
+            margin: 15px auto 25px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            width: fit-content;
+        }
+        
+        .get-started-btn:hover {
+            transform: scale(1.1);
+        }
+        /* Different crop-based colors */
+        
+        .rasthali {
+            background: linear-gradient(135deg, #242103, #876b0c);
+            color: #fff;
+        }
+        
+        .rasthali button {
+            background: #fbc02d;
+        }
+        
+        .red-banana {
+            background: linear-gradient(135deg, #491302, #9f3313);
+            color: #fff;
+        }
+        
+        .red-banana button {
+            background: #e64a19;
+        }
+        
+        .thenvalai {
+            background: linear-gradient(135deg, #1d3403, #3a6907);
+            color: #fff;
+        }
+        
+        .thenvalai button {
+            background: #558b2f;
+        }
+        
+        @media (max-width: 400px) {
+            .card {
+                width: 90%;
+            }
+            h1 {
+                text-align: center;
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <a href="agrilearn.html" class="back-arrow">← Back</a>
+
+    <!-- Google Translate -->
+    <div id="google_translate_element"></div>
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en'
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+
+    <div class="content-wrapper">
+        <h1 style="text-align: center;">🍌 Banana Varieties in India</h1>
+
+        <div class="cards-container">
+
+            <!-- 1. Rasthali Banana -->
+            <div class="card rasthali">
+                <img src="banana1.jpg" alt="Rasthali Banana">
+                <div class="card-content">
+                    <h3>🍌 Rasthali (Silk Banana / Malbhog)</h3>
+                    <p><strong>Type:</strong> Traditional / Local Variety</p>
+                    <p><strong>Where it is grown:</strong> Tamil Nadu (Thanjavur, Trichy, Coimbatore, Salem, Erode, Tirunelveli), also Andhra Pradesh, Karnataka, Kerala.</p>
+                    <p><strong>About:</strong> Premium dessert banana famous for flavor and texture. Fruits are thin-skinned, creamy-white pulp.</p>
+                </div>
+                <a href="Rasthali.html" style="text-decoration: none;">
+                    <button class="get-started-btn">Explore More</button>
+                </a>
+            </div>
+
+            <!-- 2. Red Banana -->
+            <div class="card red-banana">
+                <img src="banana2.jpg" alt="Red Banana">
+                <div class="card-content">
+                    <h3>🍌 Red Banana (Sevvazhai / Red Dacca)</h3>
+                    <p><strong>Type:</strong> Traditional / Local Variety</p>
+                    <p><strong>Where it is grown:</strong> Tamil Nadu (Tirunelveli, Kanyakumari, Trichy), also Kerala, Andhra Pradesh, Karnataka.</p>
+                    <p><strong>About:</strong> Tall plant with reddish pseudostem. Fruits have reddish-purple skin. Rich in Vitamin C, potassium, and beta-carotene.</p>
+                </div>
+                <a href="RedBanana.html" style="text-decoration: none;">
+                    <button class="get-started-btn">Explore More</button>
+                </a>
+            </div>
+
+            <!-- 3. Thenvalai Banana -->
+            <div class="card thenvalai">
+                <img src="banana3.jpg" alt="Thenvalai Banana">
+                <div class="card-content">
+                    <h3>🍌 Thenvalai (Honey Banana)</h3>
+                    <p><strong>Type:</strong> Traditional / Local Variety</p>
+                    <p><strong>Where it is grown:</strong> Tamil Nadu (Thanjavur, Trichy, Salem, Erode), also Kerala and Karnataka.</p>
+                    <p><strong>About:</strong> Medium-tall variety, long fruits, yellow when ripe. Pulp is sweet, soft, aromatic – called "Honey Banana" for its taste.</p>
+                </div>
+                <a href="Thenvalai.html" style="text-decoration: none;">
+                    <button class="get-started-btn">Explore More</button>
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+
+</html>

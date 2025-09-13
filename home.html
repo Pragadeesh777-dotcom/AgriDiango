@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriCare</title>
+
+    <!-- External CSS -->
+    <link rel="stylesheet" href="home.css">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        /* Smooth scrolling */
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        /* Hide scrollbar but keep scrolling */
+        
+        body {
+            overflow-y: scroll;
+            scrollbar-width: none;
+            /* Firefox */
+        }
+        
+        body::-webkit-scrollbar {
+            display: none;
+            /* Chrome, Safari */
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="logo"><i class="fa-solid fa-leaf animated-leaf"></i>AgriCare</div>
+        <ul class="nav-links">
+            <li class="active"><a href="#home">Home</a></li>
+            <li><a href="https://sanjayayyanar.github.io/dingo/">Diagnose</a></li>
+            <li><a href="agrilearn.html">AgriLearn</a></li>
+            <li><a href="map.html">Fertilizer</a></li>
+            <li><a href="weather.html">Weather</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+        </ul>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-overlay">
+            <h1><span>Smart Agriculture</span><br>Made Simple</h1>
+            <p>AI-powered crop disease diagnosis, weather insights, and agricultural support for Tamil Nadu farmers.</p>
+            <div class="hero-buttons">
+                <a href=""><button class="btn primary">Start Diagnosis</button></a>
+                <a href="contact.html"><button class="btn secondary">Report Issue</button></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cards Section -->
+    <section id="diagnose" class="cards-section">
+        <div class="cards-container">
+            <div class="card">
+                <img src="img1.webp" alt="Crop Disease">
+                <h3>Quick Disease Detection</h3>
+                <p>Upload a crop photo → Instantly know the disease & cure.</p>
+                <p class="extra">AI-powered accurate detection in seconds.</p>
+            </div>
+
+            <div class="card">
+                <img src="img2.avif" alt="Fertilizer">
+                <h3>Fertilizer Recommendations</h3>
+                <p>Get the right fertilizer suggestions for better yield.</p>
+                <p class="extra">Personalized guidance for soil health.</p>
+            </div>
+
+            <div class="card">
+                <img src="img3.webp" alt="Learning">
+                <h3>Farmer Guide</h3>
+                <p>Step-by-step tutorials for new farmers.</p>
+                <p class="extra">Easy to follow crop-growing tips.</p>
+            </div>
+
+            <div class="card">
+                <img src="img4.avif" alt="Shops">
+                <h3>Nearby Shops</h3>
+                <p>Find fertilizer shops with phone & location.</p>
+                <p class="extra">Trusted vendors at your fingertips.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="agrilearn" class="features">
+        <h2>What You’ll Get Here</h2>
+
+        <div class="feature-card">
+            <img src="disease.webp" alt="Crop Diagnosis">
+            <div class="feature-text">
+                <h3>Instant Crop Disease Diagnosis</h3>
+                <p>Upload a photo of your crop and instantly detect possible diseases. Get early warnings before it spreads across the field.</p>
+            </div>
+        </div>
+
+        <hr>
+
+        <div id="fertilizer" class="feature-card">
+            <img src="fertilizer.avif" alt="Fertilizer Suggestion">
+            <div class="feature-text">
+                <h3>Cure Methods & Fertilizer Suggestions</h3>
+                <p>Receive AI-powered recommendations for eco-friendly, cost-effective solutions.</p>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="feature-card" id="weather">
+            <img src="grow.avif" alt="Crop Guides">
+            <div class="feature-text">
+                <h3>Beginner-Friendly Crop Growing Guides</h3>
+                <p>Learn step-by-step methods from seed to harvest. Perfect for new farmers.</p>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="feature-card">
+            <img src="shop.avif" alt="Fertilizer Shops">
+            <div class="feature-text">
+                <h3>Fertilizer Shop Locator</h3>
+                <p>Easily find nearby fertilizer shops with maps and contact details.</p>
+            </div>
+        </div>
+
+        <hr>
+
+        <div id="contact" class="feature-card">
+            <img src="mobile.jpg" alt="Mobile Friendly">
+            <div class="feature-text">
+                <h3>Mobile-Friendly & Simple Interface</h3>
+                <p>Simple navigation, works smoothly on both mobile and desktop devices.</p>
+            </div>
+        </div>
+    </section>
+
+    <script type="module" defer src="home.js"></script>
+</body>
+
+</html>

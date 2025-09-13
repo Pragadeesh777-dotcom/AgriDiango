@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agri Learn - Jackfruit Varieties</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f5f2 url('https://www.transparenttextures.com/patterns/wood-pattern.png') repeat;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .back-arrow {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 1.1rem;
+            color: #064420;
+            background-color: #ffbb00;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        
+        .back-arrow:hover {
+            background-color: rgb(0, 102, 34);
+            color: white;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #064420;
+            margin: 60px 0 40px;
+        }
+        
+        .cards-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+        }
+        
+        .card {
+            width: 360px;
+            background: #111;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+        }
+        
+        .card img {
+            width: calc(100% - 24px);
+            height: 220px;
+            object-fit: cover;
+            border-radius: 16px;
+            margin: 12px;
+        }
+        
+        .card-content {
+            padding: 25px;
+            color: white;
+            text-align: left;
+        }
+        
+        .card-content h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: #00e6e6;
+        }
+        
+        .card-content p {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        
+        .get-started-btn {
+            display: block;
+            margin: 0 auto 25px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+            background: linear-gradient(90deg, #00e6e6, #00ff99);
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 0 15px #00ffcc;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: pulse 2s infinite;
+            text-align: center;
+            width: 80%;
+        }
+        
+        .get-started-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 25px #00ffcc;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 10px #00ffcc;
+            }
+            50% {
+                box-shadow: 0 0 20px #00ffcc;
+            }
+            100% {
+                box-shadow: 0 0 10px #00ffcc;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .card {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <a href="agrilearn.html" class="back-arrow">← Back</a>
+    <h1>🌳 Jackfruit Varieties in India </h1>
+
+    <div class="cards-container">
+
+        <!-- 1. Velipala Jackfruit -->
+        <div class="card">
+            <img src="jack1.jpg" alt="Velipala Jackfruit">
+            <div class="card-content">
+                <h3>🌱 Velipala Jackfruit</h3>
+                <p><strong>Type:</strong> Traditional / Local</p>
+                <p><strong>Where it is grown:</strong> Mostly in Tamil Nadu (Salem, Dharmapuri, Krishnagiri, Erode districts) and parts of Kerala & Karnataka.</p>
+                <p><strong>About:</strong> The Velipala jackfruit is a traditional variety known for its large-sized fruits and sweet golden-yellow bulbs. The tree is medium to tall with a strong canopy, suitable for rainfed as well as irrigated conditions.</p>
+            </div>
+            <a href="Velipala Jackfruit.html" style="text-decoration: none;">
+                <button class="get-started-btn">Explore More</button>
+            </a>
+        </div>
+
+        <!-- 2. Panruti Jackfruit -->
+        <div class="card">
+            <img src="jack2.jpg" alt="Panruti Jackfruit">
+            <div class="card-content">
+                <h3>🌱 Panruti Jackfruit</h3>
+                <p><strong>Type:</strong> Traditional / Local (GI-tagged variety)</p>
+                <p><strong>Where it is grown:</strong> Exclusively grown in Panruti, Cuddalore District, Tamil Nadu, and surrounding areas.</p>
+                <p><strong>About:</strong> The Panruti jackfruit is world-famous for its unique sweetness, aroma, and year-round fruiting ability. The trees are medium to tall and produce fruits multiple times a year due to the region’s climate.</p>
+            </div>
+            <a href="Panruti Jackfruit.html" style="text-decoration: none;">
+                <button class="get-started-btn">Explore More</button>
+            </a>
+        </div>
+
+        <!-- 3. Hybrid Jackfruit -->
+        <div class="card">
+            <img src="jack3.jpg" alt="Hybrid Jackfruit">
+            <div class="card-content">
+                <h3>🌱 Hybrid Jackfruit</h3>
+                <p><strong>Type:</strong> Hybrid</p>
+                <p><strong>Where it is grown:</strong> Cultivated in several states of India – mainly Kerala, Karnataka, Tamil Nadu, and Andhra Pradesh – through research station releases and farmer-level adoption.</p>
+                <p><strong>About:</strong> Hybrid jackfruit is developed by crossing high-yielding local varieties to combine the best traits. The trees are medium-sized, start bearing early, and produce fruits with uniform quality.</p>
+            </div>
+            <a href="Hybrid Jackfruit.html" style="text-decoration: none;">
+                <button class="get-started-btn">Explore More</button>
+            </a>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

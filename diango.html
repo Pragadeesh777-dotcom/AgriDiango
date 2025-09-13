@@ -1,0 +1,2011 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crop Disease Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #2e7d32;
+        }
+        
+        .container {
+            background: white;
+            padding: 20px;
+            max-width: 700px;
+            margin: auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        select,
+        input[type="file"],
+        button {
+            padding: 10px;
+            margin: 10px 0;
+            width: 90%;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        button {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        button:hover {
+            background: #1b5e20;
+        }
+        
+        .preview img {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            margin-top: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            display: none;
+            /* hidden until file chosen */
+        }
+        
+        .result-box {
+            margin-top: 20px;
+            background: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: left;
+            display: none;
+        }
+        
+        .result-box strong {
+            color: #2e7d32;
+        }
+        
+        .disease-image img {
+            width: 100%;
+            max-height: 250px;
+            margin-top: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🌱 Crop Disease Detection</h1>
+    <div class="container">
+        <label for="plantSelect">Select Plant*</label>
+        <select id="plantSelect">
+      <option value="auto">-- Let system decide --</option>
+      <option value="maize">Maize</option>
+      <option value="wheat">Wheat</option>
+      <option value="rice">Rice</option>
+      <option value="coconut">Coconut</option>
+      <option value="potato">Potato</option>
+      <option value="tomato">Tomato</option>
+      <option value="banana">Banana</option>
+      <option value="brinjal">Brinjal</option>
+    </select>
+
+        <!-- File input -->
+        <input type="file" id="fileInput" accept="image/*">
+
+        <!-- Preview image -->
+        <div class="preview">
+            <img id="previewImage" src="" alt="Preview">
+        </div>
+
+        <!-- Analyze button -->
+        <button onclick="analyzeCrop()">Analyze</button>
+
+        <!-- Result box -->
+        <div class="result-box" id="resultBox">
+            <div class="disease-image" id="diseaseImage"></div>
+            <p><strong>Detected Plant:</strong> <span id="detectedPlant"></span></p>
+            <p><strong>Disease:</strong> <span id="diseaseStatus"></span></p>
+            <p><strong>Cause:</strong> <span id="cause"></span></p>
+            <p><strong>Prevention:</strong> <span id="prevention"></span></p>
+            <p><strong>Treatment:</strong> <span id="treatment"></span></p>
+            <p><strong>Time Duration:</strong> <span id="timeDuration"></span></p>
+            <p><strong>Confidence:</strong> <span id="confidence"></span></p>
+        </div>
+    </div>
+
+    <script>
+        const imageUpload = document.getElementById('imageUpload');
+        const preview = document.getElementById('preview');
+        const resultBox = document.getElementById('resultBox');
+        const diseaseImage = document.getElementById('diseaseImage');
+
+        // Preview uploaded image
+        imageUpload.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    preview.innerHTML = < img src = "${event.target.result}"
+                    alt = "Uploaded Image" > ;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Database with diseases for each crop
+        const cropDatabase = {
+
+            // 🌾 Wheat Diseases
+            "WHEAT": [{
+                disease: "Leaf Rust",
+                image: "images/wheat/leaf_rust.jpg",
+                cause: "Puccinia triticina",
+                prevention: "Remove crop debris",
+                treatment: "Propiconazole 1ml/L",
+                timeDuration: "Repeat every 15 days",
+                confidence: "90%"
+            }, {
+                disease: "Stem Rust",
+                image: "images/wheat/stem_rust.jpg",
+                cause: "Puccinia graminis",
+                prevention: "Use resistant varieties",
+                treatment: "Mancozeb 2g/L",
+                timeDuration: "Every 15 days",
+                confidence: "89%"
+            }, {
+                disease: "Stripe Rust",
+                image: "images/wheat/stripe_rust.jpg",
+                cause: "Cool wet weather",
+                prevention: "Avoid excess nitrogen",
+                treatment: "Propiconazole 1ml/L",
+                timeDuration: "Every 10 days",
+                confidence: "86%"
+            }, {
+                disease: "Powdery Mildew",
+                image: "images/wheat/powdery_mildew.jpg",
+                cause: "Erysiphe graminis",
+                prevention: "Resistant seed",
+                treatment: "Sulfur dusting",
+                timeDuration: "At first sign",
+                confidence: "85%"
+            }, {
+                disease: "Loose Smut",
+                image: "images/wheat/loose_smut.jpg",
+                cause: "Ustilago tritici",
+                prevention: "Seed treatment with fungicides",
+                treatment: "Carbendazim 2g/kg",
+                timeDuration: "Before sowing",
+                confidence: "87%"
+            }, {
+                disease: "Karnal Bunt",
+                image: "images/wheat/karnal_bunt.jpg",
+                cause: "Tilletia indica",
+                prevention: "Crop rotation",
+                treatment: "Propiconazole 1ml/L",
+                timeDuration: "Every 14 days",
+                confidence: "84%"
+            }, {
+                disease: "Black Point",
+                image: "images/wheat/black_point.jpg",
+                cause: "Fusarium species",
+                prevention: "Dry seeds properly",
+                treatment: "Fungicide spray",
+                timeDuration: "At storage",
+                confidence: "82%"
+            }, {
+                disease: "Fusarium Head Blight",
+                image: "images/wheat/fusarium_head_blight.jpg",
+                cause: "Fusarium graminearum",
+                prevention: "Rotate crops",
+                treatment: "Prothioconazole 1ml/L",
+                timeDuration: "At flowering stage",
+                confidence: "83%"
+            }, {
+                disease: "Septoria Leaf Blotch",
+                image: "images/wheat/septoria_leaf_blotch.jpg",
+                cause: "Septoria tritici",
+                prevention: "Remove infected debris",
+                treatment: "Fungicide spray",
+                timeDuration: "Every 12 days",
+                confidence: "84%"
+            }, {
+                disease: "Yellow Rust",
+                image: "images/wheat/yellow_rust.jpg",
+                cause: "Puccinia striiformis",
+                prevention: "Use resistant varieties",
+                treatment: "Propiconazole 1ml/L",
+                timeDuration: "Every 10 days",
+                confidence: "85%"
+            }, {
+                disease: "Brown Rust",
+                image: "images/wheat/brown_rust.jpg",
+                cause: "Puccinia species",
+                prevention: "Balanced fertilization",
+                treatment: "Mancozeb 2g/L",
+                timeDuration: "Every 15 days",
+                confidence: "84%"
+            }, {
+                disease: "Barley Yellow Dwarf",
+                image: "images/wheat/barley_yellow_dwarf.jpg",
+                cause: "Virus spread by aphids",
+                prevention: "Control aphids",
+                treatment: "Remove infected plants",
+                timeDuration: "Continuous monitoring",
+                confidence: "83%"
+            }, {
+                disease: "Take-all",
+                image: "images/wheat/take_all.jpg",
+                cause: "Gaeumannomyces graminis",
+                prevention: "Rotate crops",
+                treatment: "Balanced fertilization",
+                timeDuration: "Season long",
+                confidence: "82%"
+            }, {
+                disease: "Ergot",
+                image: "images/wheat/ergot.jpg",
+                cause: "Claviceps purpurea",
+                prevention: "Use clean seed",
+                treatment: "Remove sclerotia manually",
+                timeDuration: "Before sowing",
+                confidence: "81%"
+            }, {
+                disease: "Wheat Streak Mosaic",
+                image: "images/wheat/wheat_streak_mosaic.jpg",
+                cause: "Wheat streak mosaic virus",
+                prevention: "Remove volunteer wheat",
+                treatment: "No direct cure",
+                timeDuration: "Continuous monitoring",
+                confidence: "80%"
+            }, {
+                disease: "Snow Mold",
+                image: "images/wheat/snow_mold.jpg",
+                cause: "Fungus under snow cover",
+                prevention: "Use resistant varieties",
+                treatment: "Fungicide spray",
+                timeDuration: "Before snow season",
+                confidence: "82%"
+            }],
+
+
+            // 🌾 Rice Diseases
+            "RICE": [{
+                disease: "Rice Blast",
+                image: "images/rice/rice_blast.jpg",
+                cause: "Magnaporthe oryzae",
+                prevention: "Resistant varieties",
+                treatment: "Tricyclazole 0.6g/L",
+                timeDuration: "Every 15 days",
+                confidence: "88%"
+            }, {
+                disease: "Brown Spot",
+                image: "images/rice/brown_spot.jpg",
+                cause: "Bipolaris oryzae",
+                prevention: "Balanced fertilizer",
+                treatment: "Mancozeb 2g/L",
+                timeDuration: "Every 15 days",
+                confidence: "87%"
+            }, {
+                disease: "Bacterial Leaf Blight",
+                image: "images/rice/bacterial_leaf_blight.jpg",
+                cause: "Xanthomonas oryzae",
+                prevention: "Disease-free seeds",
+                treatment: "Streptocycline 0.1g/L",
+                timeDuration: "Every 7 days",
+                confidence: "90%"
+            }, {
+                disease: "Sheath Blight",
+                image: "images/rice/sheath_blight.jpg",
+                cause: "Rhizoctonia solani",
+                prevention: "Avoid dense planting",
+                treatment: "Validamycin 2ml/L",
+                timeDuration: "Every 12 days",
+                confidence: "88%"
+            }, {
+                disease: "Rice Tungro Virus",
+                image: "images/rice/tungro.jpg",
+                cause: "Rice tungro virus",
+                prevention: "Control vectors",
+                treatment: "Remove infected plants",
+                timeDuration: "Continuous monitoring",
+                confidence: "85%"
+            }, {
+                disease: "False Smut",
+                image: "images/rice/false_smut.jpg",
+                cause: "Ustilaginoidea virens",
+                prevention: "Clean seeds",
+                treatment: "Carbendazim 1g/L",
+                timeDuration: "At flowering stage",
+                confidence: "84%"
+            }, {
+                disease: "Grain Discoloration",
+                image: "images/rice/grain_discoloration.jpg",
+                cause: "Multiple fungi",
+                prevention: "Proper drying",
+                treatment: "Fungicide spray",
+                timeDuration: "During storage",
+                confidence: "83%"
+            }, {
+                disease: "Leaf Scald",
+                image: "images/rice/leaf_scald.jpg",
+                cause: "Microdochium oryzae",
+                prevention: "Avoid water stress",
+                treatment: "Fungicide spray",
+                timeDuration: "At early stage",
+                confidence: "82%"
+            }, {
+                disease: "Sheath Rot",
+                image: "images/rice/sheath_rot.jpg",
+                cause: "Sarocladium oryzae",
+                prevention: "Use resistant varieties",
+                treatment: "Carbendazim 1g/L",
+                timeDuration: "During flowering",
+                confidence: "84%"
+            }, {
+                disease: "Narrow Brown Leaf Spot",
+                image: "images/rice/narrow_brown_leaf_spot.jpg",
+                cause: "Cercospora oryzae",
+                prevention: "Use resistant seeds",
+                treatment: "Mancozeb 2g/L",
+                timeDuration: "Every 15 days",
+                confidence: "83%"
+            }, {
+                disease: "Stem Rot",
+                image: "images/rice/stem_rot.jpg",
+                cause: "Sclerotium oryzae fungus",
+                prevention: "Improve field drainage",
+                treatment: "Apply Carbendazim 1g/L",
+                timeDuration: "Every 15 days",
+                confidence: "82%"
+            }, {
+                disease: "Rice Gall Midge",
+                image: "images/rice/rice_gall_midge.jpg",
+                cause: "Orseolia oryzae (insect pest)",
+                prevention: "Avoid early transplanting",
+                treatment: "Apply Carbofuran 3g per sq.m",
+                timeDuration: "As per growth stage",
+                confidence: "84%"
+            }, {
+                disease: "White Tip Nematode",
+                image: "images/rice/white_tip_nematode.jpg",
+                cause: "Aphelenchoides besseyi",
+                prevention: "Use nematode-free seeds",
+                treatment: "Hot water seed treatment",
+                timeDuration: "Before sowing",
+                confidence: "83%"
+            }, {
+                disease: "Bakanae Disease",
+                image: "images/rice/bakanae_disease.jpg",
+                cause: "Fusarium fujikuroi",
+                prevention: "Soak seeds in fungicide solution",
+                treatment: "Carbendazim 2g/L",
+                timeDuration: "Before planting",
+                confidence: "84%"
+            }, {
+                disease: "Blast Neck Rot",
+                image: "images/rice/blast_neck_rot.jpg",
+                cause: "Magnaporthe oryzae",
+                prevention: "Resistant variety and fungicide spray",
+                treatment: "Tricyclazole 0.6g/L",
+                timeDuration: "Every 15 days",
+                confidence:   "85%" 
+            }      ],
+
+            // 🌴 Coconut Diseases
+            "COCONUT": [{
+                disease: "Bud Rot",
+                image: "images/coconut/bud_rot.jpg",
+                cause: "Phytophthora palmivora fungus",
+                prevention: "Remove and burn infected fronds",
+                treatment: "Apply 1% Bordeaux mixture",
+                timeDuration: "Every 15 days",
+                confidence: "90%"
+            }, {
+                disease: "Stem Bleeding",
+                image: "images/coconut/stem_bleeding.jpg",
+                cause: "Thielaviopsis paradoxa fungus",
+                prevention: "Keep trunk clean and dry",
+                treatment: "Apply Calixin 2ml/L",
+                timeDuration: "Every 10 days",
+                confidence: "88%"
+            }, {
+                disease: "Red Palm Weevil",
+                image: "images/coconut/red_palm_weevil.jpg",
+                cause: "Insect pest infestation",
+                prevention: "Avoid injury to the tree trunk",
+                treatment: "Inject Carbaryl 0.1% solution",
+                timeDuration: "Once a month",
+                confidence: "89%"
+            }, {
+                disease: "Coconut Mite",
+                image: "images/coconut/coconut_mite.jpg",
+                cause: "Eriophyid mite infestation",
+                prevention: "Clean old nuts",
+                treatment: "Spray neem oil 2%",
+                timeDuration: "Every 20 days",
+                confidence: "85%"
+            }, {
+                disease: "Ganoderma Wilt",
+                image: "images/coconut/ganoderma_wilt.jpg",
+                cause: "Ganoderma lucidum fungus",
+                prevention: "Remove affected palms immediately",
+                treatment: "Apply Trichoderma 50g per tree",
+                timeDuration: "Monthly application",
+                confidence: "87%"
+            }, {
+                disease: "Root Wilt",
+                image: "images/coconut/root_wilt.jpg",
+                cause: "Phytoplasma infection",
+                prevention: "Use disease-free seedlings",
+                treatment: "Apply organic manure + neem cake",
+                timeDuration: "At planting & yearly",
+                confidence: "86%"
+            }, {
+                disease: "Grey Leaf Spot",
+                image: "images/coconut/grey_leaf_spot.jpg",
+                cause: "Pestalotiopsis species",
+                prevention: "Avoid dense planting",
+                treatment: "Spray Mancozeb 2g/L",
+                timeDuration: "Every 15 days",
+                confidence: "84%"
+            }, {
+                disease: "Fruit Rot",
+                image: "images/coconut/fruit_rot.jpg",
+                cause: "Fungal infection during wet season",
+                prevention: "Proper drainage",
+                treatment: "Spray Copper Oxychloride 3g/L",
+                timeDuration: "Every 15 days",
+                confidence: "85%"
+            }, {
+                disease: "Crown Choke",
+                image: "images/coconut/crown_choke.jpg",
+                cause: "Poor nutrition and fungal attack",
+                prevention: "Apply balanced fertilizer",
+                treatment: "Bordeaux paste on crown",
+                timeDuration: "Monthly",
+                confidence: "83%"
+            }, {
+                disease: "Lethal Yellowing",
+                image: "images/coconut/lethal_yellowing.jpg",
+                cause: "Mycoplasma infection",
+                prevention: "Destroy affected trees",
+                treatment: "No effective cure",
+                timeDuration: "Continuous monitoring",
+                confidence: "82%"
+            }, {
+                disease: "Bole Rot",
+                image: "images/coconut/bole_rot.jpg",
+                cause: "Fungal decay at tree base",
+                prevention: "Proper drainage",
+                treatment: "Apply Bordeaux paste",
+                timeDuration: "Every 30 days",
+                confidence: "84%"
+            }, {
+                disease: "Bud Sheath Rot",
+                image: "images/coconut/bud_sheath_rot.jpg",
+                cause: "Fungal infection",
+                prevention: "Avoid overcrowding",
+                treatment: "Apply Mancozeb 2g/L",
+                timeDuration: "Every 15 days",
+                confidence: "83%"
+            }, {
+                disease: "Nut Fall Disease",
+                image: "images/coconut/nut_fall.jpg",
+                cause: "Bug infestation or fungal attack",
+                prevention: "Clean plantation",
+                treatment: "Neem oil spray 3%",
+                timeDuration: "Every 20 days",
+                confidence: "85%"
+            }, {
+                disease: "Rhinoceros Beetle Attack",
+                image: "images/coconut/rhinoceros_beetle.jpg",
+                cause: "Insect boring into crown",
+                prevention: "Destroy breeding sites",
+                treatment: "Apply neem cake or Carbaryl 0.1%",
+                timeDuration: "Once a month",
+                confidence: "88%"
+            }, {
+                disease: "Root Feeding Disease",
+                image: "images/coconut/root_feeding.jpg",
+                cause: "Nutrient deficiency or pest",
+                prevention: "Balanced fertilization",
+                treatment: "Apply urea & potassium nitrate",
+                timeDuration: "As per schedule",
+                confidence: "86%"
+            }],
+            "MAIZE": [{
+                disease: "Gray Leaf Spot",
+                image: "images/maize/gray_leaf_spot.jpg",
+                cause: "Cercospora zeae-maydis fungus",
+                prevention: "Use resistant hybrids and crop rotation",
+                treatment: "Spray Azoxystrobin 1ml/L water",
+                timeDuration: "Every 15 days",
+                confidence: "90%"
+            }, {
+                disease: "Common Rust",
+                image: "images/maize/common_rust.jpg",
+                cause: "Puccinia sorghi fungus",
+                prevention: "Use resistant varieties",
+                treatment: "Spray Mancozeb 2g/L",
+                timeDuration: "Every 15 days",
+                confidence: "88%"
+            }, {
+                disease: "Southern Corn Leaf Blight",
+                image: "images/maize/southern_leaf_blight.jpg",
+                cause: "Bipolaris maydis fungus",
+                prevention: "Rotate crops and use resistant hybrids",
+                treatment: "Apply Carbendazim 1g/L",
+                timeDuration: "Every 15 days",
+                confidence: "87%"
+            }, {
+                disease: "Northern Corn Leaf Blight",
+                image: "images/maize/northern_leaf_blight.jpg",
+                cause: "Exserohilum turcicum fungus",
+                prevention: "Use resistant maize hybrids",
+                treatment: "Spray Tricyclazole 0.6g/L",
+                timeDuration: "Every 15 days",
+                confidence: "86%"
+            }, {
+                disease: "Downy Mildew",
+                image: "images/maize/downy_mildew.jpg",
+                cause: "Peronosclerospora sorghi fungus",
+                prevention: "Use treated seeds and rotate crops",
+                treatment: "Apply Metalaxyl 2g/kg seed",
+                timeDuration: "Before planting",
+                confidence: "85%"
+            }, {
+                disease: "Maize Streak Virus",
+                image: "images/maize/maize_streak_virus.jpg",
+                cause: "Maize streak virus spread by leafhoppers",
+                prevention: "Use disease-free seeds and control leafhoppers",
+                treatment: "No direct cure, focus on vector control",
+                timeDuration: "Continuous monitoring",
+                confidence: "84%"
+            }, {
+                disease: "Turcicum Leaf Blight",
+                image: "images/maize/turcicum_leaf_blight.jpg",
+                cause: "Setosphaeria turcica fungus",
+                prevention: "Resistant varieties and crop rotation",
+                treatment: "Apply Mancozeb 2g/L",
+                timeDuration: "Every 15 days",
+                confidence: "83%"
+            }, {
+                disease: "Charcoal Rot",
+                image: "images/maize/charcoal_rot.jpg",
+                cause: "Macrophomina phaseolina fungus",
+                prevention: "Avoid water stress and use crop rotation",
+                treatment: "No effective chemical control, focus on field management",
+                timeDuration: "Continuous monitoring",
+                confidence: "82%"
+            }, {
+                disease: "Maize Dwarf Mosaic Virus",
+                image: "images/maize/dwarf_mosaic.jpg",
+                cause: "Virus spread by aphids",
+                prevention: "Control aphids and weeds",
+                treatment: "Remove infected plants",
+                timeDuration: "As soon as detected",
+                confidence: "84%"
+            }, {
+                disease: "Ear Rot",
+                image: "images/maize/ear_rot.jpg",
+                cause: "Fusarium or Aspergillus species",
+                prevention: "Proper drying and storage",
+                treatment: "Apply appropriate fungicide spray",
+                timeDuration: "At early stage",
+                confidence: "83%"
+            }, {
+                disease: "Smut",
+                image: "images/maize/smut.jpg",
+                cause: "Ustilago maydis fungus",
+                prevention: "Destroy infected plants and use resistant seeds",
+                treatment: "No direct cure, prevent spread",
+                timeDuration: "As needed",
+                confidence: "82%"
+            }, {
+                disease: "Seedling Blight",
+                image: "images/maize/seedling_blight.jpg",
+                cause: "Pythium or Fusarium fungi",
+                prevention: "Treat seeds before sowing",
+                treatment: "Apply Metalaxyl 2g/kg seed",
+                timeDuration: "Before sowing",
+                confidence: "85%"
+            }, {
+                disease: "Diplodia Ear Rot",
+                image: "images/maize/diplodia_ear_rot.jpg",
+                cause: "Stenocarpella maydis fungus",
+                prevention: "Proper drying and crop rotation",
+                treatment: "Fungicide spray during flowering",
+                timeDuration: "As required",
+                confidence: "84%"
+            }, {
+                disease: "Goss's Wilt",
+                image: "images/maize/goss_wilt.jpg",
+                cause: "Clavibacter michiganensis bacteria",
+                prevention: "Use resistant varieties",
+                treatment: "Remove crop residue and rotate crops",
+                timeDuration: "After harvest",
+                confidence: "83%"
+            }, {
+                disease: "Stalk Rot",
+                image: "images/maize/stalk_rot.jpg",
+                cause: "Fusarium or Diplodia fungi",
+                prevention: "Improve soil fertility and avoid overwatering",
+                treatment: "Apply Trichoderma to soil",
+                timeDuration: "Monthly application",
+                confidence: "84%"
+            }, {
+                disease: "Maize Rust",
+                image: "images/maize/maize_rust.jpg",
+                cause: "Puccinia polysora fungus",
+                prevention: "Plant resistant hybrids",
+                treatment: "Spray Mancozeb 2g/L",
+                timeDuration: "Every 15 days",
+                confidence: "86%"
+            }, {
+                disease: "Root and Stalk Lodging",
+                image: "images/maize/root_stalk_lodging.jpg",
+                cause: "Poor soil nutrition or fungal disease",
+                prevention: "Use balanced fertilizer and crop support",
+                treatment: "Apply organic manure + potassium nitrate",
+                timeDuration: "At planting and mid-season",
+                confidence: "85%"
+            }, {
+                disease: "Fusarium Ear Rot",
+                image: "images/maize/fusarium_ear_rot.jpg",
+                cause: "Fusarium verticillioides fungus",
+                prevention: "Avoid late harvesting",
+                treatment: "Proper drying and fungicide spray",
+                timeDuration: "As needed",
+                confidence: "84%"
+            }, {
+                disease: "Aspergillus Ear Rot",
+                image: "images/maize/aspergillus_ear_rot.jpg",
+                cause: "Aspergillus flavus fungus",
+                prevention: "Harvest timely and dry grains properly",
+                treatment: "No effective fungicide, focus on storage practices",
+                timeDuration: "Continuous monitoring",
+                confidence: "82%"
+            }],
+            "TOMATO": [{
+                disease: "Early Blight",
+                image: "images/tomato/early_blight.jpg",
+                cause: "Alternaria solani fungus",
+                prevention: "Rotate crops and remove plant debris",
+                treatment: "Spray Mancozeb 2g/L",
+                timeDuration: "Every 10-15 days",
+                confidence: "90%"
+            }, {
+                disease: "Late Blight",
+                image: "images/tomato/late_blight.jpg",
+                cause: "Phytophthora infestans fungus",
+                prevention: "Ensure proper drainage",
+                treatment: "Spray Metalaxyl 2g/L",
+                timeDuration: "Every 7 days",
+                confidence: "92%"
+            }, {
+                disease: "Septoria Leaf Spot",
+                image: "images/tomato/septoria_leaf_spot.jpg",
+                cause: "Septoria lycopersici fungus",
+                prevention: "Avoid overhead irrigation",
+                treatment: "Spray Chlorothalonil 2g/L",
+                timeDuration: "Every 10 days",
+                confidence: "88%"
+            }, {
+                disease: "Fusarium Wilt",
+                image: "images/tomato/fusarium_wilt.jpg",
+                cause: "Fusarium oxysporum fungus",
+                prevention: "Use resistant varieties",
+                treatment: "Soil drenching with Carbendazim 2ml/L",
+                timeDuration: "Once every 20 days",
+                confidence: "89%"
+            }, {
+                disease: "Verticillium Wilt",
+                image: "images/tomato/verticillium_wilt.jpg",
+                cause: "Verticillium dahliae fungus",
+                prevention: "Rotate crops with non-host plants",
+                treatment: "Apply Trichoderma 50g per plant",
+                timeDuration: "Monthly application",
+                confidence: "87%"
+            }, {
+                disease: "Bacterial Speck",
+                image: "images/tomato/bacterial_speck.jpg",
+                cause: "Pseudomonas syringae pv. tomato",
+                prevention: "Use certified seeds",
+                treatment: "Spray Copper Oxychloride 3g/L",
+                timeDuration: "Every 7-10 days",
+                confidence: "85%"
+            }, {
+                disease: "Bacterial Spot",
+                image: "images/tomato/bacterial_spot.jpg",
+                cause: "Xanthomonas campestris pv. vesicatoria",
+                prevention: "Use disease-free seeds",
+                treatment: "Copper fungicide spray 3g/L",
+                timeDuration: "Every 7 days",
+                confidence: "86%"
+            }, {
+                disease: "Tomato Mosaic Virus",
+                image: "images/tomato/tomato_mosaic_virus.jpg",
+                cause: "TMV virus infection",
+                prevention: "Remove and destroy infected plants",
+                treatment: "No chemical cure, use resistant seeds",
+                timeDuration: "Continuous monitoring",
+                confidence: "84%"
+            }, {
+                disease: "Tomato Yellow Leaf Curl Virus",
+                image: "images/tomato/yellow_leaf_curl.jpg",
+                cause: "Whitefly transmitted virus",
+                prevention: "Control whitefly population",
+                treatment: "Spray Imidacloprid 0.5ml/L",
+                timeDuration: "Every 10 days",
+                confidence: "88%"
+            }, {
+                disease: "Anthracnose",
+                image: "images/tomato/anthracnose.jpg",
+                cause: "Colletotrichum species",
+                prevention: "Avoid overhead watering",
+                treatment: "Spray Mancozeb 2g/L",
+                timeDuration: "Every 15 days",
+                confidence: "87%"
+            }, {
+                disease: "Powdery Mildew",
+                image: "images/tomato/powdery_mildew.jpg",
+                cause: "Oidium neolycopersici fungus",
+                prevention: "Maintain proper spacing",
+                treatment: "Spray Sulfur 3g/L",
+                timeDuration: "Every 10 days",
+                confidence: "85%"
+            }, {
+                disease: "Damping-Off",
+                image: "images/tomato/damping_off.jpg",
+                cause: "Pythium and Rhizoctonia fungi",
+                prevention: "Use sterilized soil",
+                treatment: "Soil drenching with Copper Oxychloride 3g/L",
+                timeDuration: "Once before transplanting",
+                confidence: "84%"
+            }, {
+                disease: "Blossom End Rot",
+                image: "images/tomato/blossom_end_rot.jpg",
+                cause: "Calcium deficiency",
+                prevention: "Maintain consistent watering and calcium levels",
+                treatment: "Spray Calcium Nitrate 2g/L",
+                timeDuration: "Every 10 days",
+                confidence: "90%"
+            }, {
+                disease: "Sunscald",
+                image: "images/tomato/sunscald.jpg",
+                cause: "Excessive sun exposure",
+                prevention: "Provide partial shade",
+                treatment: "No chemical treatment, adjust planting",
+                timeDuration: "Continuous care",
+                confidence: "82%"
+            }, {
+                disease: "Root Knot Nematode",
+                image: "images/tomato/root_knot_nematode.jpg",
+                cause: "Meloidogyne species nematodes",
+                prevention: "Rotate crops and solarize soil",
+                treatment: "Apply neem cake 200g per plant",
+                timeDuration: "Every 30 days",
+                confidence: "86%"
+            }],
+            "POTATO": [{
+                disease: "Late Blight",
+                image: "images/potato/late_blight.jpg",
+                cause: "Phytophthora infestans fungus",
+                prevention: "Use resistant varieties, remove infected plants",
+                treatment: "Spray Metalaxyl 2g/L",
+                timeDuration: "Every 7 days",
+                confidence: "92%"
+            }, {
+                disease: "Early Blight",
+                image: "images/potato/early_blight.jpg",
+                cause: "Alternaria solani fungus",
+                prevention: "Crop rotation, remove plant debris",
+                treatment: "Spray Mancozeb 2g/L",
+                timeDuration: "Every 10-15 days",
+                confidence: "90%"
+            }, {
+                disease: "Black Scurf",
+                image: "images/potato/black_scurf.jpg",
+                cause: "Rhizoctonia solani fungus",
+                prevention: "Plant disease-free tubers",
+                treatment: "Treat seed tubers with Captan 3g/kg",
+                timeDuration: "Before planting",
+                confidence: "85%"
+            }, {
+                disease: "Bacterial Wilt",
+                image: "images/potato/bacterial_wilt.jpg",
+                cause: "Ralstonia solanacearum",
+                prevention: "Avoid waterlogging, use resistant varieties",
+                treatment: "Soil drenching with Copper Oxychloride 3g/L",
+                timeDuration: "Every 15 days",
+                confidence: "86%"
+            }, {
+                disease: "Common Scab",
+                image: "images/potato/common_scab.jpg",
+                cause: "Streptomyces scabies bacteria",
+                prevention: "Maintain soil pH below 5.2",
+                treatment: "Apply sulfur at 25 kg/ha",
+                timeDuration: "Once before planting",
+                confidence: "84%"
+            }, {
+                disease: "Potato Virus Y",
+                image: "images/potato/virus_y.jpg",
+                cause: "Aphid-transmitted virus",
+                prevention: "Use virus-free seed tubers",
+                treatment: "Spray Imidacloprid 0.5ml/L",
+                timeDuration: "Every 15 days",
+                confidence: "87%"
+            }, {
+                disease: "Brown Rot",
+                image: "images/potato/brown_rot.jpg",
+                cause: "Ralstonia solanacearum bacteria",
+                prevention: "Destroy infected plants",
+                treatment: "Soil solarization for 30 days",
+                timeDuration: "Pre-planting stage",
+                confidence: "83%"
+            }],
+            "BANANA": [{
+                disease: "Panama Wilt",
+                image: "images/banana/panama_wilt.jpg",
+                cause: "Fusarium oxysporum fungus",
+                prevention: "Use resistant varieties, avoid waterlogging",
+                treatment: "Soil drenching with Carbendazim 2ml/L",
+                timeDuration: "Every 15 days",
+                confidence: "91%"
+            }, {
+                disease: "Sigatoka Leaf Spot",
+                image: "images/banana/sigatoka_leaf_spot.jpg",
+                cause: "Mycosphaerella musicola fungus",
+                prevention: "Proper spacing and drainage",
+                treatment: "Spray Mancozeb 2g/L",
+                timeDuration: "Every 10 days",
+                confidence: "90%"
+            }, {
+                disease: "Bunchy Top Virus",
+                image: "images/banana/bunchy_top.jpg",
+                cause: "Aphid-transmitted virus",
+                prevention: "Destroy infected plants immediately",
+                treatment: "Spray Imidacloprid 0.5ml/L",
+                timeDuration: "Every 10-15 days",
+                confidence: "89%"
+            }, {
+                disease: "Banana Streak Virus",
+                image: "images/banana/banana_streak_virus.jpg",
+                cause: "Viral infection",
+                prevention: "Use virus-free planting material",
+                treatment: "Control vector insects with insecticide",
+                timeDuration: "Every 15 days",
+                confidence: "87%"
+            }, {
+                disease: "Tip Over Disease",
+                image: "images/banana/tip_over.jpg",
+                cause: "Pythium fungus due to waterlogging",
+                prevention: "Ensure proper drainage",
+                treatment: "Soil drenching with Copper Oxychloride 3g/L",
+                timeDuration: "Every 20 days",
+                confidence: "85%"
+            }, {
+                disease: "Banana Bract Mosaic Virus",
+                image: "images/banana/bract_mosaic.jpg",
+                cause: "Aphid-transmitted virus",
+                prevention: "Destroy affected plants",
+                treatment: "Spray systemic insecticide like Dimethoate 1ml/L",
+                timeDuration: "Every 15 days",
+                confidence: "88%"
+            }, {
+                disease: "Cigar End Rot",
+                image: "images/banana/cigar_end_rot.jpg",
+                cause: "Verticillium theobromae fungus",
+                prevention: "Avoid waterlogging",
+                treatment: "Spray Carbendazim 2ml/L",
+                timeDuration: "Every 7 days",
+                confidence: "86%"
+            }, {
+                disease: "Anthracnose",
+                image: "images/banana/anthracnose.jpg",
+                cause: "Colletotrichum musae fungus",
+                prevention: "Avoid overhead irrigation",
+                treatment: "Spray Mancozeb 2g/L",
+                timeDuration: "Every 10 days",
+                confidence: "87%"
+            }, {
+                disease: "Bacterial Soft Rot",
+                image: "images/banana/bacterial_soft_rot.jpg",
+                cause: "Erwinia carotovora bacteria",
+                prevention: "Avoid mechanical injury",
+                treatment: "Improve drainage and spray Copper fungicide 3g/L",
+                timeDuration: "Every 10 days",
+                confidence: "84%"
+            }, {
+                disease: "Banana Aphid Attack",
+                image: "images/banana/aphid_attack.jpg",
+                cause: "Aphid pests",
+                prevention: "Remove weeds and infected plants",
+                treatment: "Spray Imidacloprid 0.5ml/L",
+                timeDuration: "Every 15 days",
+                confidence: "85%"
+            }, {
+                disease: "Banana Nematodes",
+                image: "images/banana/nematodes.jpg",
+                cause: "Root-knot nematodes",
+                prevention: "Crop rotation and solarization",
+                treatment: "Apply neem cake 200g per plant",
+                timeDuration: "Monthly",
+                confidence: "86%"
+            }, {
+                disease: "Banana Root Rot",
+                image: "images/banana/root_rot.jpg",
+                cause: "Fungal root decay",
+                prevention: "Proper drainage",
+                treatment: "Soil drenching with Copper Oxychloride 3g/L",
+                timeDuration: "Every 20 days",
+                confidence: "87%"
+            }, {
+                disease: "Yellow Sigatoka",
+                image: "images/banana/yellow_sigatoka.jpg",
+                cause: "Mycosphaerella musicola",
+                prevention: "Use resistant varieties",
+                treatment: "Spray Mancozeb 2g/L",
+                timeDuration: "Every 7-10 days",
+                confidence: "89%"
+            }, {
+                disease: "Black Sigatoka",
+                image: "images/banana/black_sigatoka.jpg",
+                cause: "Mycosphaerella fijiensis",
+                prevention: "Avoid dense planting",
+                treatment: "Spray Propiconazole 1ml/L",
+                timeDuration: "Every 15 days",
+                confidence: "90%"
+            }, {
+                disease: "Banana Crown Rot",
+                image: "images/banana/crown_rot.jpg",
+                cause: "Fungal infection during storage",
+                prevention: "Avoid injuries during harvest",
+                treatment: "Post-harvest dip in Copper fungicide",
+                timeDuration: "Once after harvest",
+                confidence: "84%"
+            }, {
+                disease: "Banana Fruit Scarring",
+                image: "images/banana/fruit_scarring.jpg",
+                cause: "Thrips infestation",
+                prevention: "Maintain field hygiene",
+                treatment: "Spray Neem oil 2%",
+                timeDuration: "Every 15 days",
+                confidence: "83%"
+            }, {
+                disease: "Banana Wilt (Bacterial)",
+                image: "images/banana/bacterial_wilt.jpg",
+                cause: "Xanthomonas campestris",
+                prevention: "Destroy infected plants",
+                treatment: "Soil treatment with bleaching powder 20g/plant",
+                timeDuration: "Once every 30 days",
+                confidence: "87%"
+            }, {
+                disease: "Banana Leaf Spot",
+                image: "images/banana/leaf_spot.jpg",
+                cause: "Fungal attack",
+                prevention: "Proper spacing and pruning",
+                treatment: "Spray Copper Oxychloride 3g/L",
+                timeDuration: "Every 15 days",
+                confidence: "85%"
+            }, {
+                disease: "Banana Fruit Rot",
+                image: "images/banana/fruit_rot.jpg",
+                cause: "Colletotrichum musae fungus",
+                prevention: "Avoid water splash on fruits",
+                treatment: "Spray Mancozeb 2g/L",
+                timeDuration: "Every 15 days",
+                confidence: "86%"
+            }, {
+                disease: "Banana Stem Rot",
+                image: "images/banana/stem_rot.jpg",
+                cause: "Pythium fungus",
+                prevention: "Proper field drainage",
+                treatment: "Apply Trichoderma 50g per plant",
+                timeDuration: "Monthly",
+                confidence: "88%"
+            }],
+            "BRINJAL": [{
+                disease: "Bacterial Wilt",
+                image: "images/brinjal/bacterial_wilt.jpg",
+                cause: "Ralstonia solanacearum",
+                prevention: "Use resistant varieties, crop rotation",
+                treatment: "Soil drenching with Copper Oxychloride 3g/L",
+                timeDuration: "Every 15 days",
+                confidence: "90%"
+            }, {
+                disease: "Phomopsis Blight",
+                image: "images/brinjal/phomopsis_blight.jpg",
+                cause: "Phomopsis vexans fungus",
+                prevention: "Use disease-free seeds",
+                treatment: "Spray Mancozeb 2g/L",
+                timeDuration: "Every 10 days",
+                confidence: "89%"
+            }, {
+                disease: "Fusarium Wilt",
+                image: "images/brinjal/fusarium_wilt.jpg",
+                cause: "Fusarium oxysporum fungus",
+                prevention: "Remove infected plants",
+                treatment: "Apply Trichoderma 50g per plant",
+                timeDuration: "Monthly",
+                confidence: "88%"
+            }, {
+                disease: "Little Leaf Disease",
+                image: "images/brinjal/little_leaf.jpg",
+                cause: "Phytoplasma via leafhopper",
+                prevention: "Control leafhopper",
+                treatment: "Spray Imidacloprid 0.5ml/L",
+                timeDuration: "Every 15 days",
+                confidence: "90%"
+            }, {
+                disease: "Fruit and Shoot Borer",
+                image: "images/brinjal/fruit_shoot_borer.jpg",
+                cause: "Leucinodes orbonalis insect",
+                prevention: "Collect and destroy affected shoots",
+                treatment: "Neem oil 3% spray",
+                timeDuration: "Every 10 days",
+                confidence: "85%"
+            }, {
+                disease: "Powdery Mildew",
+                image: "images/brinjal/powdery_mildew.jpg",
+                cause: "Oidium fungus",
+                prevention: "Maintain spacing",
+                treatment: "Sulfur 3g/L spray",
+                timeDuration: "Every 7-10 days",
+                confidence: "87%"
+            }, {
+                disease: "Verticillium Wilt",
+                image: "images/brinjal/verticillium_wilt.jpg",
+                cause: "Verticillium dahliae fungus",
+                prevention: "Crop rotation",
+                treatment: "Apply Trichoderma 50g per plant",
+                timeDuration: "Monthly",
+                confidence: "86%"
+            }, {
+                disease: "Anthracnose",
+                image: "images/brinjal/anthracnose.jpg",
+                cause: "Colletotrichum fungus",
+                prevention: "Avoid overhead irrigation",
+                treatment: "Spray Mancozeb 2g/L",
+                timeDuration: "Every 10 days",
+                confidence: "88%"
+            }, {
+                disease: "Leaf Spot",
+                image: "images/brinjal/leaf_spot.jpg",
+                cause: "Cercospora fungus",
+                prevention: "Remove infected leaves",
+                treatment: "Spray Copper Oxychloride 3g/L",
+                timeDuration: "Every 15 days",
+                confidence: "85%"
+            }, {
+                disease: "Root Knot Nematode",
+                image: "images/brinjal/root_knot_nematode.jpg",
+                cause: "Meloidogyne nematodes",
+                prevention: "Soil solarization",
+                treatment: "Apply neem cake 200g/plant",
+                timeDuration: "Every 30 days",
+                confidence: "87%"
+            }, {
+                disease: "Downy Mildew",
+                image: "images/brinjal/downy_mildew.jpg",
+                cause: "Peronospora fungus",
+                prevention: "Maintain field hygiene",
+                treatment: "Spray Metalaxyl 2g/L",
+                timeDuration: "Every 10 days",
+                confidence: "86%"
+            }, {
+                disease: "Blossom End Rot",
+                image: "images/brinjal/blossom_end_rot.jpg",
+                cause: "Calcium deficiency",
+                prevention: "Consistent irrigation",
+                treatment: "Calcium nitrate 2g/L spray",
+                timeDuration: "Every 10 days",
+                confidence: "89%"
+            }, {
+                disease: "Bacterial Leaf Spot",
+                image: "images/brinjal/bacterial_leaf_spot.jpg",
+                cause: "Xanthomonas campestris",
+                prevention: "Certified seeds",
+                treatment: "Copper fungicide 3g/L spray",
+                timeDuration: "Every 10 days",
+                confidence: "85%"
+            }, {
+                disease: "Mosaic Virus",
+                image: "images/brinjal/mosaic_virus.jpg",
+                cause: "Aphid-transmitted virus",
+                prevention: "Control aphids",
+                treatment: "Spray Imidacloprid 0.5ml/L",
+                timeDuration: "Every 15 days",
+                confidence: "84%"
+            }, {
+                disease: "Stem Borer",
+                image: "images/brinjal/stem_borer.jpg",
+                cause: "Insect pest attack",
+                prevention: "Collect and destroy affected plants",
+                treatment: "Neem oil 2%",
+                timeDuration: "Every 10 days",
+                confidence: "86%"
+            }, {
+                disease: "Root Rot",
+                image: "images/brinjal/root_rot.jpg",
+                cause: "Pythium fungus",
+                prevention: "Proper drainage",
+                treatment: "Soil drenching with Carbendazim 2ml/L",
+                timeDuration: "Every 15 days",
+                confidence: "88%"
+            }, {
+                disease: "Wilt Complex",
+                image: "images/brinjal/wilt_complex.jpg",
+                cause: "Combination of bacterial and fungal wilt",
+                prevention: "Rotate crops",
+                treatment: "Copper fungicide 3g/L",
+                timeDuration: "Every 10 days",
+                confidence: "89%"
+            }, {
+                disease: "Whitefly Infestation",
+                image: "images/brinjal/whitefly.jpg",
+                cause: "Whitefly attack",
+                prevention: "Destroy alternate hosts",
+                treatment: "Spray Imidacloprid 0.5ml/L",
+                timeDuration: "Every 7 days",
+                confidence: "87%"
+            }, {
+                disease: "Fruit Rot",
+                image: "images/brinjal/fruit_rot.jpg",
+                cause: "Fungal infection",
+                prevention: "Avoid waterlogging",
+                treatment: "Spray Mancozeb 2g/L",
+                timeDuration: "Every 15 days",
+                confidence: "85%"
+            }],
+            "GARLIC": [{
+                disease: "White Rot",
+                image: "images/garlic/white_rot.jpg",
+                cause: "Sclerotium cepivorum fungus",
+                prevention: "Avoid planting infected bulbs",
+                treatment: "Soil solarization 30 days before planting",
+                timeDuration: "Pre-planting",
+                confidence: "90%"
+            }, {
+                disease: "Downy Mildew",
+                image: "images/garlic/downy_mildew.jpg",
+                cause: "Peronospora destructor fungus",
+                prevention: "Good field hygiene",
+                treatment: "Spray Metalaxyl 2g/L",
+                timeDuration: "Every 10 days",
+                confidence: "89%"
+            }, {
+                disease: "Rust",
+                image: "images/garlic/rust.jpg",
+                cause: "Puccinia allii fungus",
+                prevention: "Use resistant varieties",
+                treatment: "Spray Mancozeb 2g/L",
+                timeDuration: "Every 7 days",
+                confidence: "88%"
+            }, {
+                disease: "Basal Rot",
+                image: "images/garlic/basal_rot.jpg",
+                cause: "Fusarium oxysporum fungus",
+                prevention: "Avoid waterlogging",
+                treatment: "Soil drenching with Carbendazim 2ml/L",
+                timeDuration: "Every 15 days",
+                confidence: "87%"
+            }, {
+                disease: "Botrytis Neck Rot",
+                image: "images/garlic/botrytis_neck_rot.jpg",
+                cause: "Botrytis allii fungus",
+                prevention: "Proper drying before storage",
+                treatment: "Spray Chlorothalonil 2g/L",
+                timeDuration: "Every 15 days",
+                confidence: "86%"
+            }, {
+                disease: "Pink Root",
+                image: "images/garlic/pink_root.jpg",
+                cause: "Phoma terrestris fungus",
+                prevention: "Crop rotation",
+                treatment: "Apply Trichoderma 50g/plant",
+                timeDuration: "Monthly",
+                confidence: "85%"
+            }, {
+                disease: "Garlic Bloat Nematode",
+                image: "images/garlic/bloat_nematode.jpg",
+                cause: "Ditylenchus dipsaci nematode",
+                prevention: "Use nematode-free seed",
+                treatment: "Neem cake 200g/plant",
+                timeDuration: "Every 30 days",
+                confidence: "86%"
+            }, {
+                disease: "Purple Blotch",
+                image: "images/garlic/purple_blotch.jpg",
+                cause: "Alternaria porri fungus",
+                prevention: "Avoid overhead irrigation",
+                treatment: "Spray Mancozeb 2g/L",
+                timeDuration: "Every 10 days",
+                confidence: "87%"
+            }, {
+                disease: "Bacterial Soft Rot",
+                image: "images/garlic/bacterial_soft_rot.jpg",
+                cause: "Erwinia bacteria",
+                prevention: "Avoid mechanical injury",
+                treatment: "Improve storage conditions",
+                timeDuration: "Post-harvest",
+                confidence: "85%"
+            }, {
+                disease: "Black Mold",
+                image: "images/garlic/black_mold.jpg",
+                cause: "Aspergillus niger fungus",
+                prevention: "Avoid bruising during harvest",
+                treatment: "Dip bulbs in fungicide solution",
+                timeDuration: "Post-harvest",
+                confidence: "84%"
+            }, {
+                disease: "Damping-Off",
+                image: "images/garlic/damping_off.jpg",
+                cause: "Pythium and Rhizoctonia fungi",
+                prevention: "Sterilize soil before planting",
+                treatment: "Soil drenching with Copper Oxychloride 3g/L",
+                timeDuration: "Pre-planting",
+                confidence: "88%"
+            }, {
+                disease: "Leaf Blight",
+                image: "images/garlic/leaf_blight.jpg",
+                cause: "Fungal attack",
+                prevention: "Maintain spacing",
+                treatment: "Spray Chlorothalonil 2g/L",
+                timeDuration: "Every 10 days",
+                confidence: "85%"
+            }, {
+                disease: "Storage Rot",
+                image: "images/garlic/storage_rot.jpg",
+                cause: "Multiple fungi during storage",
+                prevention: "Proper drying and ventilation",
+                treatment: "Dip bulbs in fungicide solution",
+                timeDuration: "Once before storage",
+                confidence: "83%"
+            }, {
+                disease: "Stemphylium Blight",
+                image: "images/garlic/stemphylium_blight.jpg",
+                cause: "Stemphylium fungus",
+                prevention: "Avoid overcrowding",
+                treatment: "Spray Mancozeb 2g/L",
+                timeDuration: "Every 15 days",
+                confidence: "86%"
+            }, {
+                disease: "Mosaic Virus",
+                image: "images/garlic/mosaic_virus.jpg",
+                cause: "Virus spread by aphids",
+                prevention: "Control aphid population",
+                treatment: "Spray Imidacloprid 0.5ml/L",
+                timeDuration: "Every 15 days",
+                confidence: "85%"
+            }, {
+                disease: "Thrips Attack",
+                image: "images/garlic/thrips.jpg",
+                cause: "Thrips pest infestation",
+                prevention: "Weed control",
+                treatment: "Neem oil 3% spray",
+                timeDuration: "Every 10 days",
+                confidence: "87%"
+            }, {
+                disease: "Garlic Root Maggot",
+                image: "images/garlic/root_maggot.jpg",
+                cause: "Delia antiqua insect larvae",
+                prevention: "Crop rotation",
+                treatment: "Soil drenching with neem solution",
+                timeDuration: "Every 15 days",
+                confidence: "84%"
+            }, {
+                disease: "White Tip Nematode",
+                image: "images/garlic/white_tip_nematode.jpg",
+                cause: "Nematode infestation",
+                prevention: "Destroy infected plants",
+                treatment: "Neem cake 200g/plant",
+                timeDuration: "Monthly",
+                confidence: "86%"
+            }, {
+                disease: "Garlic Aphid Attack",
+                image: "images/garlic/aphid_attack.jpg",
+                cause: "Aphid infestation",
+                prevention: "Weed removal",
+                treatment: "Spray Imidacloprid 0.5ml/L",
+                timeDuration: "Every 10 days",
+                confidence: "87%"
+            }, {
+                disease: "Garlic Bulb Rot",
+                image: "images/garlic/bulb_rot.jpg",
+                cause: "Rhizoctonia fungus",
+                prevention: "Avoid over-irrigation",
+                treatment: "Soil drenching with Copper Oxychloride 3g/L",
+                timeDuration: "Every 20 days",
+                confidence: "85%"
+            }],
+            "MANGO": [{
+                disease: "Powdery Mildew",
+                image: "images/mango/powdery_mildew.jpg",
+                cause: "Oidium mangiferae fungus",
+                prevention: "Prune dense canopy, improve airflow",
+                treatment: "Spray Sulfur 3g/L",
+                timeDuration: "Every 7-10 days",
+                confidence: "91%"
+            }, {
+                disease: "Anthracnose",
+                image: "images/mango/anthracnose.jpg",
+                cause: "Colletotrichum gloeosporioides",
+                prevention: "Avoid overhead irrigation",
+                treatment: "Spray Mancozeb 2g/L",
+                timeDuration: "Every 10 days",
+                confidence: "90%"
+            }, {
+                disease: "Bacterial Canker",
+                image: "images/mango/bacterial_canker.jpg",
+                cause: "Xanthomonas campestris pv. mangiferaeindicae",
+                prevention: "Use resistant varieties",
+                treatment: "Copper Oxychloride 3g/L spray",
+                timeDuration: "Every 15 days",
+                confidence: "89%"
+            }, {
+                disease: "Mango Malformation",
+                image: "images/mango/malformation.jpg",
+                cause: "Fungus and mites complex",
+                prevention: "Prune affected shoots",
+                treatment: "Carbendazim 2ml/L spray",
+                timeDuration: "Every 15 days",
+                confidence: "87%"
+            }, {
+                disease: "Sooty Mold",
+                image: "images/mango/sooty_mold.jpg",
+                cause: "Fungal growth on honeydew from insects",
+                prevention: "Control mealybugs and aphids",
+                treatment: "Neem oil 3% spray",
+                timeDuration: "Every 10 days",
+                confidence: "85%"
+            }, {
+                disease: "Dieback",
+                image: "images/mango/dieback.jpg",
+                cause: "Botryodiplodia fungus",
+                prevention: "Prune affected branches",
+                treatment: "Copper fungicide 3g/L",
+                timeDuration: "Every 15 days",
+                confidence: "88%"
+            }, {
+                disease: "Fruit Fly Infestation",
+                image: "images/mango/fruit_fly.jpg",
+                cause: "Bactrocera dorsalis insect",
+                prevention: "Destroy infested fruits",
+                treatment: "Use pheromone traps",
+                timeDuration: "Continuous monitoring",
+                confidence: "89%"
+            }, {
+                disease: "Gummosis",
+                image: "images/mango/gummosis.jpg",
+                cause: "Fungal infection due to injury",
+                prevention: "Avoid bark injuries",
+                treatment: "Apply Bordeaux paste on wounds",
+                timeDuration: "As needed",
+                confidence: "84%"
+            }, {
+                disease: "Mango Hopper Attack",
+                image: "images/mango/hopper_attack.jpg",
+                cause: "Amritodus atkinsoni insect",
+                prevention: "Remove weeds",
+                treatment: "Spray Imidacloprid 0.5ml/L",
+                timeDuration: "Every 15 days",
+                confidence: "90%"
+            }, {
+                disease: "Leaf Spot",
+                image: "images/mango/leaf_spot.jpg",
+                cause: "Cercospora fungus",
+                prevention: "Destroy infected leaves",
+                treatment: "Spray Copper Oxychloride 3g/L",
+                timeDuration: "Every 10 days",
+                confidence: "86%"
+            }, {
+                disease: "Stem Borer",
+                image: "images/mango/stem_borer.jpg",
+                cause: "Batocera rufomaculata insect",
+                prevention: "Remove infested branches",
+                treatment: "Apply kerosene-soaked cotton in boreholes",
+                timeDuration: "Every 20 days",
+                confidence: "87%"
+            }, {
+                disease: "Mango Mealybug",
+                image: "images/mango/mealybug.jpg",
+                cause: "Drosicha mangiferae insect",
+                prevention: "Plough orchard base in October",
+                treatment: "Neem oil 2% spray",
+                timeDuration: "Every 15 days",
+                confidence: "85%"
+            }, {
+                disease: "Root Rot",
+                image: "images/mango/root_rot.jpg",
+                cause: "Fusarium fungus",
+                prevention: "Improve drainage",
+                treatment: "Soil drenching with Trichoderma 50g/plant",
+                timeDuration: "Monthly",
+                confidence: "88%"
+            }, {
+                disease: "Pink Disease",
+                image: "images/mango/pink_disease.jpg",
+                cause: "Corticium salmonicolor fungus",
+                prevention: "Remove infected branches",
+                treatment: "Apply Bordeaux paste",
+                timeDuration: "As needed",
+                confidence: "84%"
+            }, {
+                disease: "Gall Midge",
+                image: "images/mango/gall_midge.jpg",
+                cause: "Procontarinia mangiferae insect",
+                prevention: "Burn infested flowers",
+                treatment: "Neem oil 3% spray",
+                timeDuration: "Every 10 days",
+                confidence: "85%"
+            }, {
+                disease: "Scab",
+                image: "images/mango/scab.jpg",
+                cause: "Fungal infection",
+                prevention: "Proper sanitation",
+                treatment: "Spray Mancozeb 2g/L",
+                timeDuration: "Every 15 days",
+                confidence: "86%"
+            }, {
+                disease: "Algal Leaf Spot",
+                image: "images/mango/algal_leaf_spot.jpg",
+                cause: "Cephaleuros virescens algae",
+                prevention: "Maintain tree health",
+                treatment: "Copper fungicide 3g/L",
+                timeDuration: "Every 15 days",
+                confidence: "84%"
+            }, {
+                disease: "Bark Borer",
+                image: "images/mango/bark_borer.jpg",
+                cause: "Indarbela quadrinotata insect",
+                prevention: "Destroy infested branches",
+                treatment: "Inject kerosene or petrol into holes",
+                timeDuration: "As needed",
+                confidence: "85%"
+            }, {
+                disease: "Mango Anthracnose Fruit Rot",
+                image: "images/mango/anthracnose_fruit_rot.jpg",
+                cause: "Colletotrichum fungus",
+                prevention: "Avoid high humidity",
+                treatment: "Carbendazim 2ml/L spray",
+                timeDuration: "Every 10 days",
+                confidence: "87%"
+            }, {
+                disease: "Mango Decline",
+                image: "images/mango/decline.jpg",
+                cause: "Soil-borne fungi and nematodes",
+                prevention: "Use disease-free planting material",
+                treatment: "Soil application of Trichoderma",
+                timeDuration: "Monthly",
+                confidence: "88%"
+            }],
+            "JACKFRUIT": [{
+                disease: "Fruit Rot",
+                image: "images/jackfruit/fruit_rot.jpg",
+                cause: "Rhizopus fungus",
+                prevention: "Proper harvesting techniques",
+                treatment: "Spray Mancozeb 2g/L",
+                timeDuration: "Every 10 days",
+                confidence: "90%"
+            }, {
+                disease: "Stem Rot",
+                image: "images/jackfruit/stem_rot.jpg",
+                cause: "Fusarium fungus",
+                prevention: "Avoid waterlogging",
+                treatment: "Soil drenching with Copper Oxychloride 3g/L",
+                timeDuration: "Every 20 days",
+                confidence: "89%"
+            }, {
+                disease: "Bacterial Leaf Blight",
+                image: "images/jackfruit/bacterial_leaf_blight.jpg",
+                cause: "Xanthomonas bacteria",
+                prevention: "Maintain field hygiene",
+                treatment: "Copper fungicide 3g/L spray",
+                timeDuration: "Every 10 days",
+                confidence: "88%"
+            }, {
+                disease: "Powdery Mildew",
+                image: "images/jackfruit/powdery_mildew.jpg",
+                cause: "Oidium fungus",
+                prevention: "Proper airflow",
+                treatment: "Sulfur 3g/L spray",
+                timeDuration: "Every 7-10 days",
+                confidence: "87%"
+            }, {
+                disease: "Fruit Borer",
+                image: "images/jackfruit/fruit_borer.jpg",
+                cause: "Carposina insect",
+                prevention: "Remove infected fruits",
+                treatment: "Neem oil 3% spray",
+                timeDuration: "Every 15 days",
+                confidence: "86%"
+            }, {
+                disease: "Leaf Spot",
+                image: "images/jackfruit/leaf_spot.jpg",
+                cause: "Phomopsis fungus",
+                prevention: "Prune affected leaves",
+                treatment: "Copper Oxychloride 3g/L",
+                timeDuration: "Every 15 days",
+                confidence: "86%"
+            }, {
+                disease: "Root Rot",
+                image: "images/jackfruit/root_rot.jpg",
+                cause: "Pythium fungus",
+                prevention: "Improve soil drainage",
+                treatment: "Trichoderma 50g/plant",
+                timeDuration: "Monthly",
+                confidence: "87%"
+            }, {
+                disease: "Dieback",
+                image: "images/jackfruit/dieback.jpg",
+                cause: "Botryodiplodia fungus",
+                prevention: "Prune affected branches",
+                treatment: "Apply Bordeaux paste",
+                timeDuration: "As needed",
+                confidence: "85%"
+            }, {
+                disease: "Anthracnose",
+                image: "images/jackfruit/anthracnose.jpg",
+                cause: "Colletotrichum fungus",
+                prevention: "Avoid overhead irrigation",
+                treatment: "Mancozeb 2g/L",
+                timeDuration: "Every 10 days",
+                confidence: "88%"
+            }, {
+                disease: "Bark Borer",
+                image: "images/jackfruit/bark_borer.jpg",
+                cause: "Batocera rufomaculata insect",
+                prevention: "Remove infested bark",
+                treatment: "Kerosene soaked cotton in holes",
+                timeDuration: "Every 15 days",
+                confidence: "87%"
+            }, {
+                disease: "Fruit Fly",
+                image: "images/jackfruit/fruit_fly.jpg",
+                cause: "Bactrocera dorsalis",
+                prevention: "Destroy infested fruits",
+                treatment: "Use pheromone traps",
+                timeDuration: "Continuous monitoring",
+                confidence: "89%"
+            }, {
+                disease: "Sooty Mold",
+                image: "images/jackfruit/sooty_mold.jpg",
+                cause: "Honeydew secretion fungus",
+                prevention: "Control aphids and mealybugs",
+                treatment: "Neem oil 2% spray",
+                timeDuration: "Every 10 days",
+                confidence: "85%"
+            }, {
+                disease: "Gall Midge",
+                image: "images/jackfruit/gall_midge.jpg",
+                cause: "Midge insect infestation",
+                prevention: "Burn infested parts",
+                treatment: "Neem oil 3% spray",
+                timeDuration: "Every 10 days",
+                confidence: "84%"
+            }, {
+                disease: "Brown Rot",
+                image: "images/jackfruit/brown_rot.jpg",
+                cause: "Fungal attack",
+                prevention: "Harvest fruits at correct maturity",
+                treatment: "Spray Carbendazim 2ml/L",
+                timeDuration: "Every 10 days",
+                confidence: "85%"
+            }, {
+                disease: "Wilt Disease",
+                image: "images/jackfruit/wilt.jpg",
+                cause: "Fusarium fungus",
+                prevention: "Crop rotation",
+                treatment: "Apply Trichoderma 50g/plant",
+                timeDuration: "Monthly",
+                confidence: "88%"
+            }, {
+                disease: "Shoot Borer",
+                image: "images/jackfruit/shoot_borer.jpg",
+                cause: "Insect pest",
+                prevention: "Destroy affected shoots",
+                treatment: "Neem oil 2%",
+                timeDuration: "Every 15 days",
+                confidence: "86%"
+            }, {
+                disease: "Pink Disease",
+                image: "images/jackfruit/pink_disease.jpg",
+                cause: "Corticium salmonicolor fungus",
+                prevention: "Prune affected branches",
+                treatment: "Bordeaux paste application",
+                timeDuration: "As needed",
+                confidence: "85%"
+            }, {
+                disease: "Algal Leaf Spot",
+                image: "images/jackfruit/algal_leaf_spot.jpg",
+                cause: "Cephaleuros virescens algae",
+                prevention: "Improve air circulation",
+                treatment: "Copper fungicide 3g/L",
+                timeDuration: "Every 15 days",
+                confidence: "84%"
+            }, {
+                disease: "Fruit Crack",
+                image: "images/jackfruit/fruit_crack.jpg",
+                cause: "Calcium deficiency",
+                prevention: "Maintain moisture levels",
+                treatment: "Calcium nitrate 2g/L spray",
+                timeDuration: "Every 15 days",
+                confidence: "83%"
+            }],
+            "RAGI": [{
+                disease: "Blast Disease",
+                image: "images/ragi/blast.jpg",
+                cause: "Magnaporthe grisea fungus",
+                prevention: "Use resistant varieties",
+                treatment: "Spray Carbendazim 2ml/L",
+                timeDuration: "Every 10 days",
+                confidence: "91%"
+            }, {
+                disease: "Leaf Spot",
+                image: "images/ragi/leaf_spot.jpg",
+                cause: "Helminthosporium fungus",
+                prevention: "Proper spacing",
+                treatment: "Spray Mancozeb 2g/L",
+                timeDuration: "Every 7-10 days",
+                confidence: "90%"
+            }, {
+                disease: "Downy Mildew",
+                image: "images/ragi/downy_mildew.jpg",
+                cause: "Sclerospora graminicola fungus",
+                prevention: "Use disease-free seeds",
+                treatment: "Metalaxyl 2g/L spray",
+                timeDuration: "Every 10 days",
+                confidence: "89%"
+            }, {
+                disease: "Brown Spot",
+                image: "images/ragi/brown_spot.jpg",
+                cause: "Bipolaris fungus",
+                prevention: "Field sanitation",
+                treatment: "Mancozeb 2g/L",
+                timeDuration: "Every 15 days",
+                confidence: "88%"
+            }, {
+                disease: "Stem Rot",
+                image: "images/ragi/stem_rot.jpg",
+                cause: "Sclerotium rolfsii fungus",
+                prevention: "Avoid waterlogging",
+                treatment: "Trichoderma application 50g/plant",
+                timeDuration: "Monthly",
+                confidence: "87%"
+            }, {
+                disease: "Rust",
+                image: "images/ragi/rust.jpg",
+                cause: "Puccinia fungus",
+                prevention: "Use resistant varieties",
+                treatment: "Propiconazole 1ml/L",
+                timeDuration: "Every 15 days",
+                confidence: "88%"
+            }, {
+                disease: "Earhead Caterpillar",
+                image: "images/ragi/earhead_caterpillar.jpg",
+                cause: "Helicoverpa insect",
+                prevention: "Collect and destroy larvae",
+                treatment: "Neem oil 3% spray",
+                timeDuration: "Every 15 days",
+                confidence: "87%"
+            }, {
+                disease: "Shoot Fly",
+                image: "images/ragi/shoot_fly.jpg",
+                cause: "Atherigona insect",
+                prevention: "Early sowing",
+                treatment: "Imidacloprid 0.5ml/L",
+                timeDuration: "Every 10 days",
+                confidence: "86%"
+            }, {
+                disease: "Grain Smut",
+                image: "images/ragi/grain_smut.jpg",
+                cause: "Ustilago fungus",
+                prevention: "Seed treatment with fungicide",
+                treatment: "Thiram 2g/kg seed",
+                timeDuration: "Pre-sowing",
+                confidence: "85%"
+            }, {
+                disease: "Head Smut",
+                image: "images/ragi/head_smut.jpg",
+                cause: "Sphacelotheca sorghi fungus",
+                prevention: "Use clean seeds",
+                treatment: "Seed treatment with Captan 2g/kg seed",
+                timeDuration: "Pre-sowing",
+                confidence: "86%"
+            }, {
+                disease: "Aphid Infestation",
+                image: "images/ragi/aphids.jpg",
+                cause: "Aphid pests",
+                prevention: "Maintain crop hygiene",
+                treatment: "Imidacloprid 0.5ml/L spray",
+                timeDuration: "Every 15 days",
+                confidence: "85%"
+            }, {
+                disease: "Termite Attack",
+                image: "images/ragi/termite.jpg",
+                cause: "Termite pest",
+                prevention: "Field flooding",
+                treatment: "Chlorpyriphos 2ml/L soil drench",
+                timeDuration: "Every 30 days",
+                confidence: "86%"
+            }, {
+                disease: "Foot Rot",
+                image: "images/ragi/foot_rot.jpg",
+                cause: "Fusarium fungus",
+                prevention: "Proper drainage",
+                treatment: "Trichoderma application",
+                timeDuration: "Monthly",
+                confidence: "87%"
+            }, {
+                disease: "Nematode Infestation",
+                image: "images/ragi/nematodes.jpg",
+                cause: "Meloidogyne nematodes",
+                prevention: "Crop rotation",
+                treatment: "Neem cake 200g/plant",
+                timeDuration: "Every 30 days",
+                confidence: "85%"
+            }, {
+                disease: "Seedling Blight",
+                image: "images/ragi/seedling_blight.jpg",
+                cause: "Pythium fungus",
+                prevention: "Seed treatment",
+                treatment: "Carbendazim 2g/kg seed",
+                timeDuration: "Pre-sowing",
+                confidence: "86%"
+            }, {
+                disease: "Root Knot",
+                image: "images/ragi/root_knot.jpg",
+                cause: "Nematode attack",
+                prevention: "Soil solarization",
+                treatment: "Neem oil soil drench",
+                timeDuration: "Every 30 days",
+                confidence: "85%"
+            }, {
+                disease: "False Smut",
+                image: "images/ragi/false_smut.jpg",
+                cause: "Ustilaginoidea virens fungus",
+                prevention: "Proper sanitation",
+                treatment: "Carbendazim 2ml/L spray",
+                timeDuration: "Every 10 days",
+                confidence: "84%"
+            }, {
+                disease: "Weevil Infestation",
+                image: "images/ragi/weevil.jpg",
+                cause: "Storage pests",
+                prevention: "Use airtight containers",
+                treatment: "Fumigation with neem leaves",
+                timeDuration: "Post-harvest",
+                confidence: "83%"
+            }, {
+                disease: "Cutworm Attack",
+                image: "images/ragi/cutworm.jpg",
+                cause: "Agrotis segetum insect",
+                prevention: "Field ploughing",
+                treatment: "Neem oil 2% spray",
+                timeDuration: "Every 10 days",
+                confidence: "84%"
+            }, {
+                disease: "Mite Infestation",
+                image: "images/ragi/mite.jpg",
+                cause: "Mite pest attack",
+                prevention: "Maintain field hygiene",
+                treatment: "Spray Sulfur 3g/L",
+                timeDuration: "Every 15 days",
+                confidence: "85%"
+            }],
+            "SUGARCANE": [{
+                disease: "Red Rot",
+                image: "images/sugarcane/red_rot.jpg",
+                cause: "Colletotrichum falcatum fungus",
+                prevention: "Use resistant varieties",
+                treatment: "Soak setts in Carbendazim 0.1% for 30 min",
+                timeDuration: "Pre-planting",
+                confidence: "92%"
+            }, {
+                disease: "Smut",
+                image: "images/sugarcane/smut.jpg",
+                cause: "Sporisorium scitamineum fungus",
+                prevention: "Use disease-free seed material",
+                treatment: "Hot water treatment at 50°C for 30 min",
+                timeDuration: "Pre-planting",
+                confidence: "91%"
+            }, {
+                disease: "Wilt",
+                image: "images/sugarcane/wilt.jpg",
+                cause: "Cephalosporium fungus",
+                prevention: "Use clean setts",
+                treatment: "Trichoderma application",
+                timeDuration: "Monthly",
+                confidence: "89%"
+            }, {
+                disease: "Grassy Shoot Disease",
+                image: "images/sugarcane/grassy_shoot.jpg",
+                cause: "Phytoplasma",
+                prevention: "Rogue infected plants",
+                treatment: "Spray Tetracycline 250ppm",
+                timeDuration: "Every 15 days",
+                confidence: "88%"
+            }, {
+                disease: "Pineapple Disease",
+                image: "images/sugarcane/pineapple_disease.jpg",
+                cause: "Ceratocystis paradoxa fungus",
+                prevention: "Avoid mechanical injuries",
+                treatment: "Sett treatment with fungicide",
+                timeDuration: "Pre-planting",
+                confidence: "90%"
+            }, {
+                disease: "Rust",
+                image: "images/sugarcane/rust.jpg",
+                cause: "Puccinia melanocephala fungus",
+                prevention: "Plant resistant varieties",
+                treatment: "Mancozeb 2g/L spray",
+                timeDuration: "Every 10 days",
+                confidence: "87%"
+            }, {
+                disease: "Leaf Scald",
+                image: "images/sugarcane/leaf_scald.jpg",
+                cause: "Xanthomonas albilineans bacteria",
+                prevention: "Sanitize tools",
+                treatment: "Copper fungicide 3g/L",
+                timeDuration: "Every 15 days",
+                confidence: "88%"
+            }, {
+                disease: "Whip Smut",
+                image: "images/sugarcane/whip_smut.jpg",
+                cause: "Fungal spores",
+                prevention: "Use clean planting material",
+                treatment: "Hot water treatment",
+                timeDuration: "Pre-planting",
+                confidence: "87%"
+            }, {
+                disease: "Top Shoot Borer",
+                image: "images/sugarcane/top_shoot_borer.jpg",
+                cause: "Scirpophaga excerptalis insect",
+                prevention: "Field sanitation",
+                treatment: "Neem oil 3% spray",
+                timeDuration: "Every 15 days",
+                confidence: "87%"
+            }, {
+                disease: "Root Borer",
+                image: "images/sugarcane/root_borer.jpg",
+                cause: "Polyocha depressella insect",
+                prevention: "Destroy infested plants",
+                treatment: "Chlorpyriphos 2ml/L spray",
+                timeDuration: "Every 20 days",
+                confidence: "86%"
+            }, {
+                disease: "Termite Infestation",
+                image: "images/sugarcane/termite.jpg",
+                cause: "Termite pest",
+                prevention: "Field flooding",
+                treatment: "Soil drenching with Chlorpyriphos",
+                timeDuration: "Every 30 days",
+                confidence: "85%"
+            }, {
+                disease: "Borers Complex",
+                image: "images/sugarcane/borer_complex.jpg",
+                cause: "Combination of borers",
+                prevention: "Crop rotation",
+                treatment: "Neem oil 2% spray",
+                timeDuration: "Every 15 days",
+                confidence: "85%"
+            }, {
+                disease: "Sett Rot",
+                image: "images/sugarcane/sett_rot.jpg",
+                cause: "Fungal infection in setts",
+                prevention: "Treat setts before planting",
+                treatment: "Carbendazim 0.1% dip",
+                timeDuration: "Pre-planting",
+                confidence: "86%"
+            }, {
+                disease: "Wilt Complex",
+                image: "images/sugarcane/wilt_complex.jpg",
+                cause: "Combination of soil fungi",
+                prevention: "Improve drainage",
+                treatment: "Trichoderma application",
+                timeDuration: "Monthly",
+                confidence: "85%"
+            }, {
+                disease: "White Woolly Aphid",
+                image: "images/sugarcane/white_woolly_aphid.jpg",
+                cause: "Aphid pest",
+                prevention: "Control ant population",
+                treatment: "Imidacloprid 0.5ml/L spray",
+                timeDuration: "Every 15 days",
+                confidence: "85%"
+            }, {
+                disease: "Scale Insects",
+                image: "images/sugarcane/scale_insects.jpg",
+                cause: "Insect pests",
+                prevention: "Regular monitoring",
+                treatment: "Neem oil 2% spray",
+                timeDuration: "Every 10 days",
+                confidence: "84%"
+            }, {
+                disease: "Yellow Leaf Syndrome",
+                image: "images/sugarcane/yellow_leaf.jpg",
+                cause: "Luteovirus infection",
+                prevention: "Plant resistant varieties",
+                treatment: "Nutrient spray with Zinc and Magnesium",
+                timeDuration: "Every 15 days",
+                confidence: "85%"
+            }, {
+                disease: "Gumming Disease",
+                image: "images/sugarcane/gumming.jpg",
+                cause: "Xanthomonas bacteria",
+                prevention: "Destroy infected plants",
+                treatment: "Copper fungicide 3g/L",
+                timeDuration: "Every 15 days",
+                confidence: "84%"
+            }, {
+                disease: "Shoot Fly",
+                image: "images/sugarcane/shoot_fly.jpg",
+                cause: "Atherigona spp.",
+                prevention: "Early planting",
+                treatment: "Imidacloprid 0.5ml/L spray",
+                timeDuration: "Every 15 days",
+                confidence: "85%"
+            }, {
+                disease: "Fiji Leaf Gall",
+                image: "images/sugarcane/fiji_leaf_gall.jpg",
+                cause: "Planthopper pest",
+                prevention: "Remove affected plants",
+                treatment: "Neem oil 3% spray",
+                timeDuration: "Every 15 days",
+                confidence: "84%"
+            }]
+
+
+
+        };
+        console.log(cropDiseases["MANGO"][0].disease); // Output: Powdery Mildew
+
+        // Analyze function
+        function analyzeCrop() {
+            const plant = document.getElementById('plantSelect').value.toUpperCase();
+            const diseases = cropDatabase[plant] || cropDatabase['COCONUT'];
+            const randomDisease = diseases[Math.floor(Math.random() * diseases.length)];
+
+            resultBox.style.display = 'block';
+            diseaseImage.innerHTML = < img src = "${randomDisease.image}"
+            alt = "${randomDisease.disease}" > ;
+            document.getElementById('detectedPlant').innerText = plant;
+            document.getElementById('diseaseStatus').innerText = randomDisease.disease;
+            document.getElementById('cause').innerText = randomDisease.cause;
+            document.getElementById('prevention').innerText = randomDisease.prevention;
+            document.getElementById('treatment').innerText = randomDisease.treatment;
+            document.getElementById('timeDuration').innerText = randomDisease.timeDuration;
+            document.getElementById('confidence').innerText = randomDisease.confidence;
+        }
+    </script>
+    <script>
+        document.getElementById("fileInput").addEventListener("change", function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById("previewImage");
+                    preview.src = e.target.result;
+                    preview.style.display = "block"; // show image
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+
+</body>
+
+</html>
+</body>
+
+</html>
